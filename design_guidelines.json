@@ -1,0 +1,157 @@
+{
+  "brand": {
+    "name": "Liser",
+    "identity": "The Digital Curator",
+    "tone": "Sleek, Premium, Organized, Visual",
+    "mission": "Empower creators to curate and share products with style."
+  },
+  "theme": {
+    "mode": "dark",
+    "strategy": "midnight_cyber",
+    "palette": {
+      "background": {
+        "default": "#030712",
+        "paper": "#111827",
+        "subtle": "#1F2937"
+      },
+      "primary": {
+        "main": "#7C3AED",
+        "light": "#8B5CF6",
+        "dark": "#6D28D9",
+        "contrast": "#FFFFFF"
+      },
+      "secondary": {
+        "main": "#10B981",
+        "light": "#34D399",
+        "dark": "#059669",
+        "contrast": "#FFFFFF"
+      },
+      "accent": {
+        "main": "#F472B6",
+        "light": "#FBCFE8",
+        "dark": "#DB2777"
+      },
+      "text": {
+        "primary": "#F9FAFB",
+        "secondary": "#9CA3AF",
+        "muted": "#6B7280"
+      },
+      "border": {
+        "default": "#1F2937",
+        "active": "#374151"
+      },
+      "status": {
+        "success": "#10B981",
+        "error": "#EF4444",
+        "warning": "#F59E0B",
+        "info": "#3B82F6"
+      }
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Outfit, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-5xl md:text-7xl font-bold tracking-tight",
+      "h2": "text-3xl md:text-5xl font-semibold tracking-tight",
+      "h3": "text-2xl md:text-3xl font-medium",
+      "body": "text-base md:text-lg leading-relaxed text-gray-300",
+      "caption": "text-sm text-gray-500 uppercase tracking-widest"
+    }
+  },
+  "layout": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "spacing": {
+      "section": "py-24 md:py-32",
+      "element": "gap-6 md:gap-8"
+    },
+    "grids": {
+      "bento": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[200px]",
+      "masonry": "columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6",
+      "dashboard": "grid grid-cols-1 lg:grid-cols-12 gap-6"
+    }
+  },
+  "components": {
+    "button": {
+      "base": "inline-flex items-center justify-center rounded-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(124,58,237,0.5)] hover:shadow-[0_0_25px_rgba(124,58,237,0.7)]",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+      "ghost": "hover:bg-accent hover:text-accent-foreground"
+    },
+    "card": {
+      "base": "rounded-lg border border-border bg-card text-card-foreground shadow-sm",
+      "glass": "bg-black/40 backdrop-blur-md border border-white/10 shadow-xl",
+      "interactive": "hover:border-primary/50 transition-colors cursor-pointer group relative overflow-hidden"
+    },
+    "input": {
+      "base": "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-white/5 border border-white/10",
+    "gradients": {
+      "hero": "bg-gradient-to-br from-violet-900/20 via-background to-background",
+      "text": "bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400"
+    },
+    "shadows": {
+      "neon": "shadow-[0_0_10px_rgba(124,58,237,0.3)]",
+      "depth": "shadow-2xl shadow-black/50"
+    },
+    "animation": {
+      "hover_lift": "hover:-translate-y-1 transition-transform duration-300",
+      "fade_in": "animate-in fade-in zoom-in duration-500"
+    }
+  },
+  "image_urls": {
+    "tech": [
+      "https://images.pexels.com/photos/33298190/pexels-photo-33298190.jpeg",
+      "https://images.pexels.com/photos/33298188/pexels-photo-33298188.jpeg"
+    ],
+    "fashion": [
+      "https://images.pexels.com/photos/6540997/pexels-photo-6540997.jpeg",
+      "https://images.pexels.com/photos/12725054/pexels-photo-12725054.jpeg"
+    ],
+    "people": [
+      "https://images.pexels.com/photos/9255726/pexels-photo-9255726.jpeg",
+      "https://images.pexels.com/photos/10293860/pexels-photo-10293860.jpeg"
+    ],
+    "abstract": [
+      "https://images.pexels.com/photos/28428587/pexels-photo-28428587.jpeg",
+      "https://images.pexels.com/photos/29355999/pexels-photo-29355999.jpeg"
+    ]
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "stroke-width-1.5"
+  },
+  "motion": {
+    "library": "framer-motion",
+    "transitions": {
+      "default": { "duration": 0.3, "ease": "easeInOut" },
+      "spring": { "type": "spring", "stiffness": 300, "damping": 30 }
+    }
+  },
+  "universal_guidelines": [
+    "Do NOT use gradients for dark backgrounds unless specified.",
+    "Avoid centering text excessively; use left alignment for readability.",
+    "Use 2-3x more spacing (padding/margin) than standard.",
+    "Interactive elements must have clear hover/focus states.",
+    "Use 'sonner' for toast notifications.",
+    "Components must use named exports.",
+    "Pages must use default exports.",
+    "Ensure all interactive elements have data-testid attributes."
+  ],
+  "instructions_to_main_agent": [
+    "Follow the theme strictly: Dark mode by default.",
+    "Use the provided image URLs for placeholders.",
+    "Implement the Bento Grid for BagList discovery.",
+    "Use Shadcn UI components but customize them with the specified Tailwind classes.",
+    "Ensure the dashboard is dense and data-rich, while the marketing pages are spacious and visual.",
+    "Prioritize performance: Use efficient image loading and code splitting.",
+    "Maintain accessibility: high contrast text, focus states, aria-labels."
+  ]
+}
