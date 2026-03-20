@@ -508,15 +508,30 @@ async def get_user_profile(username: str, user=Depends(get_optional_user)):
     if not profile:
         raise HTTPException(status_code=404, detail="User not found")
     
-    query = {"user_id": profile["id"], "is_public": True}
+    is_own_profile = user and user["id"] == profile["id"]
+    query = {"user_id": profile["id"]} if is_own_profile else {"user_id": profile["id"], "is_public": True}
     baglists = await db.baglists.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     for b in baglists:
         b["username"] = profile["username"]
         b["display_name"] = profile["display_name"]
         b["is_favorited"] = False
         b["is_saved"] = False
+
+    # Favoritos públicos del usuario
+    favs = await db.favorites.find({"user_id": profile["id"]}, {"_id": 0, "baglist_id": 1}).to_list(100)
+    fav_ids = [f["baglist_id"] for f in favs]
+    fav_baglists = await db.baglists.find({"id": {"$in": fav_ids}, "is_public": True}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    user_ids = list(set(b["user_id"] for b in fav_baglists))
+    users_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "username": 1, "display_name": 1}).to_list(100)
+    users_map = {u["id"]: u for u in users_list}
+    for b in fav_baglists:
+        u = users_map.get(b["user_id"], {})
+        b["username"] = u.get("username", "")
+        b["display_name"] = u.get("display_name", "")
+        b["is_favorited"] = True
+        b["is_saved"] = False
     
-    return {"user": profile, "baglists": baglists}
+    return {"user": profile, "baglists": baglists, "favorites": fav_baglists, "is_own_profile": is_own_profile}
 
 @api_router.get("/categories")
 async def get_categories():

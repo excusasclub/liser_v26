@@ -141,6 +141,10 @@ export function Navbar() {
               <span className="text-xs">Entrar</span>
             </Link>
           )}
+          <button onClick={toggleTheme} className="flex flex-col items-center gap-1 px-3 py-2 text-muted-foreground">
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            <span className="text-xs">Tema</span>
+          </button>
         </div>
       </div>
     </>
