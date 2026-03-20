@@ -93,7 +93,7 @@ export default function CreateBagListPage() {
     if (!productForm.name.trim()) { toast.error('El nombre es obligatorio'); return; }
     if (!isEditing) { toast.error('Guarda la lista primero'); return; }
     try {
-      const payload = { ...productForm, price: parseFloat(productForm.price) || 0 };
+      const payload = { ...productForm, price: productForm.price !== '' ? parseFloat(productForm.price) : null };
       if (editingProduct) {
         const res = await axios.put(`${API}/baglists/${id}/products/${editingProduct.id}`, payload, { headers: getAuthHeaders() });
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? res.data : p));
@@ -204,7 +204,7 @@ export default function CreateBagListPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-                          {p.price > 0 && <p className="text-xs text-secondary">{p.currency === 'EUR' ? `${p.price.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : `${p.currency} ${p.price.toFixed(2)}`}</p>}
+                          {p.price != null && p.price > 0 && <p className="text-xs text-secondary">{p.currency === 'EUR' ? `${p.price.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : `${p.currency} ${p.price.toFixed(2)}`}</p>}
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openProductDialog(p)}>
@@ -294,12 +294,12 @@ export default function CreateBagListPage() {
                 <Select value={productForm.currency} onValueChange={(v) => setProductForm({ ...productForm, currency: v })}>
                   <SelectTrigger data-testid="product-currency-select"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-card border-border">
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="MXN">MXN</SelectItem>
-                      <SelectItem value="COP">COP</SelectItem>
-                      <SelectItem value="ARS">ARS</SelectItem>
-                    </SelectContent>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="MXN">MXN</SelectItem>
+                    <SelectItem value="COP">COP</SelectItem>
+                    <SelectItem value="ARS">ARS</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
             </div>

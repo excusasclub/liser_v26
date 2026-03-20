@@ -180,8 +180,8 @@ export default function BagListDetailPage() {
 
                   {/* Precio, código descuento y enlace */}
                   <div className="flex flex-wrap items-center gap-2 mt-auto pt-1">
-                    {product.price > 0 && (
-                      <span className="text-sm font-semibold text-secondary">{product.currency === 'EUR' ? `${product.price.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : `${product.currency} ${product.price.toFixed(2)}`}</span>
+                    {product.price != null && product.price > 0 && (
+                      <span className="text-sm font-semibold text-secondary">{product.currency} {product.price.toFixed(2)}</span>
                     )}
                     {product.discount_code && (
                       <button

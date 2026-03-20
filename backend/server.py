@@ -61,7 +61,7 @@ class CustomField(BaseModel):
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     image_url: Optional[str] = Field(default="", max_length=500)
-    price: Optional[float] = Field(default=0, ge=0)
+    price: Optional[float] = Field(default=None, ge=0)
     currency: Optional[str] = "EUR"
     link: Optional[str] = Field(default="", max_length=2000)
     description: Optional[str] = Field(default="", max_length=1000)
@@ -72,13 +72,15 @@ class ProductOut(BaseModel):
     id: str
     name: str
     image_url: str
-    price: float
+    price: Optional[float] = None
     currency: str
     link: str
     description: str
     position: int
     discount_code: Optional[str] = ""
     custom_fields: Optional[List[CustomField]] = []
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
     
 
 class BagListCreate(BaseModel):
@@ -398,13 +400,15 @@ async def add_product(baglist_id: str, data: ProductCreate, user=Depends(get_req
         "id": str(uuid.uuid4()),
         "name": data.name,
         "image_url": data.image_url or "",
-        "price": data.price or 0,
+        "price": data.price if data.price is not None else None,
         "currency": data.currency or "USD",
         "link": data.link or "",
         "description": data.description or "",
         "discount_code": data.discount_code or "",
         "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields else [],
-        "position": len(baglist.get("products", []))
+        "position": len(baglist.get("products", [])),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.baglists.update_one(
@@ -422,7 +426,7 @@ async def update_product(baglist_id: str, product_id: str, data: ProductCreate, 
     products = baglist.get("products", [])
     for i, p in enumerate(products):
         if p["id"] == product_id:
-            products[i] = {**p, "name": data.name, "image_url": data.image_url or "", "price": data.price or 0, "currency": data.currency or "USD", "link": data.link or "", "description": data.description or "", "discount_code": data.discount_code or "", "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields is not None else []}
+            products[i] = {**p, "name": data.name, "image_url": data.image_url or "", "price": data.price if data.price is not None else None, "currency": data.currency or "EUR", "link": data.link or "", "description": data.description or "", "discount_code": data.discount_code or "", "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields is not None else [], "updated_at": datetime.now(timezone.utc).isoformat()}
             break
     else:
         raise HTTPException(status_code=404, detail="Product not found")
