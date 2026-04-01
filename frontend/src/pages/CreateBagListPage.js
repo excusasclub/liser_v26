@@ -13,6 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 } from '@/components/ui/dialog';
 import { Plus, X, Package, GripVertical, Trash2, Save, ArrowLeft, Loader2, Edit } from 'lucide-react';
+import { ImageUpload } from '@/components/ImageUpload';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -33,7 +34,7 @@ export default function CreateBagListPage() {
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
-    name: '', image_url: '', price: '', currency: 'EUR', link: '', description: '', discount_code: '', custom_fields: []
+    name: '', image_url: '', price: '', currency: 'EUR', link: '', description: '', discount_code: '', custom_fields: [], social_links: []
   });
 
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function CreateBagListPage() {
   const openProductDialog = (product = null) => {
     if (product) {
       setEditingProduct(product);
-      setProductForm({ name: product.name, image_url: product.image_url, price: String(product.price || ''), currency: product.currency || 'EUR', link: product.link, description: product.description, discount_code: product.discount_code || '', custom_fields: product.custom_fields || [] });
+      setProductForm({ name: product.name, image_url: product.image_url, price: String(product.price || ''), currency: product.currency || 'EUR', link: product.link, description: product.description, discount_code: product.discount_code || '', custom_fields: product.custom_fields || [], social_links: product.social_links || [] });
     } else {
       setEditingProduct(null);
       setProductForm({ name: '', image_url: '', price: '', currency: 'EUR', link: '', description: '', discount_code: '', custom_fields: [] });
@@ -229,6 +230,12 @@ export default function CreateBagListPage() {
           <Card className="border-border/50 bg-card">
             <CardHeader><CardTitle className="font-['Outfit'] text-base">Imagen de Portada</CardTitle></CardHeader>
             <CardContent className="space-y-3">
+              <ImageUpload
+                value={form.cover_image_url}
+                onChange={(url) => setForm({ ...form, cover_image_url: url })}
+                placeholder="Subir portada"
+              />
+              <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
               <Input data-testid="cover-image-input" placeholder="https://ejemplo.com/imagen.jpg" value={form.cover_image_url}
                 onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} />
               {form.cover_image_url && (
@@ -279,7 +286,13 @@ export default function CreateBagListPage() {
                 onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>URL de Imagen</Label>
+              <Label>Imagen</Label>
+              <ImageUpload
+                value={productForm.image_url}
+                onChange={(url) => setProductForm({ ...productForm, image_url: url })}
+                placeholder="Subir imagen"
+              />
+              <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
               <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
                 onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
             </div>
@@ -317,6 +330,44 @@ export default function CreateBagListPage() {
               <Label>Código de descuento</Label>
               <Input data-testid="product-discount-input" value={productForm.discount_code} placeholder="Ej: VERANO20"
                 onChange={(e) => setProductForm({ ...productForm, discount_code: e.target.value.toUpperCase() })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Redes sociales</Label>
+              {(productForm.social_links || []).map((link, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <select
+                    value={link.network}
+                    onChange={(e) => {
+                      const updated = [...productForm.social_links];
+                      updated[idx].network = e.target.value;
+                      setProductForm({ ...productForm, social_links: updated });
+                    }}
+                    className="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground"
+                  >
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="twitter">Twitter/X</option>
+                    <option value="pinterest">Pinterest</option>
+                    <option value="twitch">Twitch</option>
+                  </select>
+                  <Input placeholder="https://..." value={link.url}
+                    onChange={(e) => {
+                      const updated = [...productForm.social_links];
+                      updated[idx].url = e.target.value;
+                      setProductForm({ ...productForm, social_links: updated });
+                    }} />
+                  <Button variant="ghost" size="icon" onClick={() => {
+                    setProductForm({ ...productForm, social_links: productForm.social_links.filter((_, i) => i !== idx) });
+                  }}>
+                    <X className="w-4 h-4 text-red-400" />
+                  </Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" type="button" className="gap-2 w-full"
+                onClick={() => setProductForm({ ...productForm, social_links: [...(productForm.social_links || []), { network: 'instagram', url: '' }] })}>
+                <Plus className="w-4 h-4" /> Añadir red social
+              </Button>
             </div>
             <div className="space-y-2">
               <Label>Campos personalizados</Label>

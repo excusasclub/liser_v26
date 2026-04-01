@@ -6,13 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Heart, Bookmark, ExternalLink, Package, ArrowLeft, Edit, Share2, Loader2, Copy, Check } from 'lucide-react';
+import { Heart, Bookmark, ExternalLink, Package, ArrowLeft, Edit, Share2, Loader2, Copy, Check, Instagram, Youtube, Twitch } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
 export default function BagListDetailPage() {
-  const { id } = useParams();
+  const { username, slug } = useParams();
   const { user, getAuthHeaders, API } = useAuth();
   const [baglist, setBaglist] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,14 +28,14 @@ export default function BagListDetailPage() {
     const fetchBaglist = async () => {
       try {
         const headers = user ? getAuthHeaders() : {};
-        const res = await axios.get(`${API}/baglists/${id}`, { headers });
+        const res = await axios.get(`${API}/baglists/by-slug/${username}/${slug}`, { headers });
         setBaglist(res.data);
       } catch (err) {
         toast.error(err.response?.data?.detail || 'Error al cargar la lista');
       } finally { setLoading(false); }
     };
     fetchBaglist();
-  }, [id, user, getAuthHeaders]);
+  }, [username, slug, user, getAuthHeaders]);
 
   const handleFavorite = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
@@ -62,6 +62,28 @@ export default function BagListDetailPage() {
   if (!baglist) return <div className="text-center py-32 text-muted-foreground">Lista no encontrada</div>;
 
   const isOwner = user && user.id === baglist.user_id;
+
+  const SOCIAL_CONFIG = {
+    instagram: { label: 'Instagram', color: '#E1306C', icon: Instagram },
+    youtube: { label: 'YouTube', color: '#FF0000', icon: Youtube },
+    tiktok: { label: 'TikTok', color: '#000000', icon: null },
+    twitter: { label: 'Twitter/X', color: '#1DA1F2', icon: null },
+    pinterest: { label: 'Pinterest', color: '#E60023', icon: null },
+    twitch: { label: 'Twitch', color: '#9146FF', icon: Twitch },
+  };
+
+  const SocialIcon = ({ network, url }) => {
+    const config = SOCIAL_CONFIG[network] || { label: network, color: '#888', icon: null };
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+        title={config.label}
+        style={{ color: config.color }}
+        className="flex items-center justify-center w-7 h-7 rounded-full border border-current hover:opacity-80 transition-opacity text-xs font-bold"
+      >
+        {config.icon ? <config.icon className="w-3.5 h-3.5" /> : config.label.charAt(0)}
+      </a>
+    );
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="baglist-detail-page">
@@ -165,6 +187,15 @@ export default function BagListDetailPage() {
                   {/* Descripción completa */}
                   {product.description && (
                     <p className="text-xs text-muted-foreground leading-relaxed">{product.description}</p>
+                  )}
+
+                  {/* Redes sociales */}
+                  {product.social_links && product.social_links.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {product.social_links.map((link, idx) => (
+                        <SocialIcon key={idx} network={link.network} url={link.url} />
+                      ))}
+                    </div>
                   )}
 
                   {/* Campos personalizados */}

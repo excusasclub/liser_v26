@@ -35,6 +35,9 @@ async def migrate():
             if "updated_at" not in product:
                 products[i]["updated_at"] = baglist.get("updated_at", datetime.now(timezone.utc).isoformat())
                 changed = True
+            if "social_links" not in product:
+                products[i]["social_links"] = []
+                changed = True
             if "price" not in product:
                 products[i]["price"] = None
                 changed = True

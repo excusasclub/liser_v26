@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query, Request, UploadFile, File
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,12 +8,22 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr, field_validator, HttpUrl
 from typing import List, Optional, Union
 import uuid
+import re
+import unicodedata
+import cloudinary
+import cloudinary.uploader
 from datetime import datetime, timezone, timedelta
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import bcrypt
 import jwt
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -58,6 +68,10 @@ class CustomField(BaseModel):
     key: str = Field(min_length=1, max_length=50)
     value: str = Field(min_length=1, max_length=200)
 
+class SocialLink(BaseModel):
+    network: str = Field(min_length=1, max_length=20)
+    url: str = Field(min_length=1, max_length=500)
+
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     image_url: Optional[str] = Field(default="", max_length=500)
@@ -67,6 +81,7 @@ class ProductCreate(BaseModel):
     description: Optional[str] = Field(default="", max_length=1000)
     discount_code: Optional[str] = Field(default="", max_length=50)
     custom_fields: Optional[List[CustomField]] = []
+    social_links: Optional[List[SocialLink]] = []
 
 class ProductOut(BaseModel):
     id: str
@@ -79,6 +94,7 @@ class ProductOut(BaseModel):
     position: int
     discount_code: Optional[str] = ""
     custom_fields: Optional[List[CustomField]] = []
+    social_links: Optional[List[SocialLink]] = []
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
     
@@ -90,6 +106,7 @@ class BagListCreate(BaseModel):
     cover_image_url: Optional[str] = Field(default="", max_length=500)
     tags: Optional[List[str]] = []
     is_public: Optional[bool] = True
+    slug: Optional[str] = None
 
 class BagListUpdate(BaseModel):
     title: Optional[str] = Field(default=None, max_length=100)
@@ -115,10 +132,32 @@ class BagListOut(BaseModel):
     saves_count: int
     created_at: str
     updated_at: str
+    slug: Optional[str] = None
     is_favorited: Optional[bool] = False
     is_saved: Optional[bool] = False
 
 # ── Auth Helpers ──
+def slugify(text: str) -> str:
+    text = unicodedata.normalize('NFKD', text)
+    text = text.encode('ascii', 'ignore').decode('ascii')
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s-]', '', text)
+    text = re.sub(r'[\s-]+', '-', text)
+    text = text.strip('-')
+    return text or "baglist"
+
+async def generate_unique_slug(db, base_slug: str, exclude_id: str = None) -> str:
+    slug = base_slug
+    counter = 1
+    while True:
+        query = {"slug": slug}
+        if exclude_id:
+            query["id"] = {"$ne": exclude_id}
+        existing = await db.baglists.find_one(query)
+        if not existing:
+            return slug
+        slug = f"{base_slug}-{counter}"
+        counter += 1
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -240,6 +279,8 @@ async def update_me(data: dict, user=Depends(get_required_user)):
 @api_router.post("/baglists")
 async def create_baglist(data: BagListCreate, user=Depends(get_required_user)):
     baglist_id = str(uuid.uuid4())
+    base_slug = slugify(data.title)
+    unique_slug = await generate_unique_slug(db, base_slug)
     doc = {
         "id": baglist_id,
         "user_id": user["id"],
@@ -252,6 +293,7 @@ async def create_baglist(data: BagListCreate, user=Depends(get_required_user)):
         "products": [],
         "favorites_count": 0,
         "saves_count": 0,
+        "slug": unique_slug,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
@@ -333,6 +375,36 @@ async def get_my_baglists(user=Depends(get_required_user)):
         b["is_saved"] = False
     return baglists
 
+@api_router.get("/baglists/by-slug/{username}/{slug}")
+async def get_baglist_by_slug(username: str, slug: str, user=Depends(get_optional_user)):
+    profile = await db.users.find_one({"username": username}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    baglist = await db.baglists.find_one({"user_id": profile["id"], "slug": slug}, {"_id": 0})
+    if not baglist:
+        raise HTTPException(status_code=404, detail="BagList not found")
+    
+    if not baglist["is_public"]:
+        if not user or user["id"] != baglist["user_id"]:
+            raise HTTPException(status_code=403, detail="This BagList is private")
+    
+    is_favorited = False
+    is_saved = False
+    if user:
+        fav = await db.favorites.find_one({"user_id": user["id"], "baglist_id": baglist["id"]})
+        is_favorited = fav is not None
+        save = await db.saves.find_one({"user_id": user["id"], "baglist_id": baglist["id"]})
+        is_saved = save is not None
+    
+    return {
+        **baglist,
+        "username": profile.get("username", ""),
+        "display_name": profile.get("display_name", ""),
+        "avatar_url": profile.get("avatar_url", ""),
+        "is_favorited": is_favorited,
+        "is_saved": is_saved
+    }
 @api_router.get("/baglists/{baglist_id}")
 async def get_baglist(baglist_id: str, user=Depends(get_optional_user)):
     baglist = await db.baglists.find_one({"id": baglist_id}, {"_id": 0})
@@ -406,6 +478,7 @@ async def add_product(baglist_id: str, data: ProductCreate, user=Depends(get_req
         "description": data.description or "",
         "discount_code": data.discount_code or "",
         "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields else [],
+        "social_links": [s.model_dump() for s in data.social_links] if data.social_links else [],
         "position": len(baglist.get("products", [])),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
@@ -426,7 +499,9 @@ async def update_product(baglist_id: str, product_id: str, data: ProductCreate, 
     products = baglist.get("products", [])
     for i, p in enumerate(products):
         if p["id"] == product_id:
-            products[i] = {**p, "name": data.name, "image_url": data.image_url or "", "price": data.price if data.price is not None else None, "currency": data.currency or "EUR", "link": data.link or "", "description": data.description or "", "discount_code": data.discount_code or "", "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields is not None else [], "updated_at": datetime.now(timezone.utc).isoformat()}
+            products[i] = {**p, "name": data.name, "image_url": data.image_url or "", "price": data.price if data.price is not None else None, "currency": data.currency or "EUR", "link": data.link or "", "description": data.description or "", "discount_code": data.discount_code or "", 
+            "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields is not None else [],
+            "social_links": [s.model_dump() for s in data.social_links] if data.social_links is not None else [], "updated_at": datetime.now(timezone.utc).isoformat()}
             break
     else:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -537,6 +612,45 @@ async def get_user_profile(username: str, user=Depends(get_optional_user)):
     
     return {"user": profile, "baglists": baglists, "favorites": fav_baglists, "is_own_profile": is_own_profile}
 
+
+@api_router.get("/sitemap")
+async def get_sitemap():
+    baglists = await db.baglists.find(
+        {"is_public": True, "slug": {"$exists": True}},
+        {"_id": 0, "slug": 1, "username": 1, "updated_at": 1}
+    ).to_list(10000)
+    
+    users = await db.users.find({}, {"_id": 0, "username": 1}).to_list(10000)
+    
+    return {
+        "baglists": [{"url": f"/list/{b.get('username', '')}/{b['slug']}", "updated_at": b.get("updated_at", "")} for b in baglists if b.get("slug") and b.get("username")],
+        "users": [{"url": f"/user/{u['username']}"} for u in users]
+    }
+
+
+
+@api_router.post("/upload/image")
+async def upload_image_file(file: UploadFile = File(...), user=Depends(get_required_user)):
+    if not file:
+        raise HTTPException(status_code=400, detail="No file provided")
+    
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Formato no permitido. Usa JPG, PNG, WEBP o GIF")
+    
+    contents = await file.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="La imagen no puede superar 5MB")
+    
+    try:
+        result = cloudinary.uploader.upload(
+            contents,
+            folder="liser",
+            transformation=[{"width": 1200, "crop": "limit"}, {"quality": "auto"}]
+        )
+        return {"url": result["secure_url"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al subir imagen: {str(e)}")
 @api_router.get("/categories")
 async def get_categories():
     return CATEGORIES

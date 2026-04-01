@@ -21,7 +21,7 @@ function ProtectedRoute({ children }) {
 }
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, theme } = useAuth();
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
@@ -30,7 +30,7 @@ function AppContent() {
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
         <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/baglist/:id" element={<BagListDetailPage />} />
+        <Route path="/list/:username/:slug" element={<BagListDetailPage />} />
         <Route path="/user/:username" element={<ProfilePage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/create" element={<ProtectedRoute><CreateBagListPage /></ProtectedRoute>} />
@@ -39,7 +39,7 @@ function AppContent() {
         <Route path="/settings/profile" element={<EditProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-      <Toaster theme="dark" position="bottom-right" />
+      <Toaster theme={theme === 'light' ? 'light' : 'dark'} position="bottom-right" />
     </div>
   );
 }

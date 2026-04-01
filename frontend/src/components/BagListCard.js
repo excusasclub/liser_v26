@@ -35,7 +35,7 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
   const coverImage = baglist.cover_image_url || baglist.products?.[0]?.image_url;
 
   return (
-    <Link to={`/baglist/${baglist.id}`} data-testid={`baglist-card-${baglist.id}`}>
+    <Link to={baglist.slug ? `/list/${baglist.username}/${baglist.slug}` : `/baglist/${baglist.id}`} data-testid={`baglist-card-${baglist.id}`}>
       <Card className="group overflow-hidden border-border/50 bg-card hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 h-full">
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
           {coverImage ? (

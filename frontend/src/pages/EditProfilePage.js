@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ImageUpload } from '@/components/ImageUpload';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -66,12 +67,15 @@ export default function EditProfilePage() {
                             onChange={(e) => setForm({ ...form, bio: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                        <Label>URL de avatar</Label>
+                        <Label>Avatar</Label>
+                        <ImageUpload
+                            value={form.avatar_url}
+                            onChange={(url) => setForm({ ...form, avatar_url: url })}
+                            placeholder="Subir avatar"
+                        />
+                        <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
                         <Input value={form.avatar_url} placeholder="https://..."
                             onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} />
-                        {form.avatar_url && (
-                            <img src={form.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full object-cover mt-2" />
-                        )}
                     </div>
                 </CardContent>
             </Card>
