@@ -19,14 +19,15 @@ from slowapi.errors import RateLimitExceeded
 import bcrypt
 import jwt
 
-cloudinary.config(
-    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.environ.get('CLOUDINARY_API_KEY'),
-    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
-)
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / '.env', override=True)
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
+
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -650,6 +651,7 @@ async def upload_image_file(file: UploadFile = File(...), user=Depends(get_requi
         )
         return {"url": result["secure_url"]}
     except Exception as e:
+        print("CLOUDINARY ERROR:", str(e))
         raise HTTPException(status_code=500, detail=f"Error al subir imagen: {str(e)}")
 @api_router.get("/categories")
 async def get_categories():
