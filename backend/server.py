@@ -48,7 +48,7 @@ CATEGORIES = ["Tech", "Fashion", "Home", "Beauty", "Sports", "Food", "Travel", "
 
 class UserRegister(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=6, max_length=100)
+    password: str = Field(min_length=8, max_length=100)
     username: str = Field(min_length=3, max_length=30)
     display_name: Optional[str] = Field(default=None, max_length=50)
 
@@ -72,6 +72,10 @@ class CustomField(BaseModel):
 class SocialLink(BaseModel):
     network: str = Field(min_length=1, max_length=20)
     url: str = Field(min_length=1, max_length=500)
+
+class ProductClick(BaseModel):
+    baglist_id: str
+    product_id: str
 
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
@@ -321,12 +325,13 @@ async def list_baglists(
     if category and category != "All":
         query["category"] = category
     if search:
+        safe_search = re.escape(search)
         query["$or"] = [
-            {"title": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}},
-            {"tags": {"$regex": search, "$options": "i"}},
-            {"products.name": {"$regex": search, "$options": "i"}},
-            {"products.description": {"$regex": search, "$options": "i"}}
+            {"title": {"$regex": safe_search, "$options": "i"}},
+            {"description": {"$regex": safe_search, "$options": "i"}},
+            {"tags": {"$regex": safe_search, "$options": "i"}},
+            {"products.name": {"$regex": safe_search, "$options": "i"}},
+            {"products.description": {"$regex": safe_search, "$options": "i"}}
         ]
     if user_id:
         query["user_id"] = user_id
@@ -639,9 +644,9 @@ async def upload_image_file(file: UploadFile = File(...), user=Depends(get_requi
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Formato no permitido. Usa JPG, PNG, WEBP o GIF")
     
-    contents = await file.read()
-    if len(contents) > 5 * 1024 * 1024:
+    if file.size and file.size > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="La imagen no puede superar 5MB")
+    contents = await file.read()
     
     try:
         result = cloudinary.uploader.upload(
@@ -651,8 +656,26 @@ async def upload_image_file(file: UploadFile = File(...), user=Depends(get_requi
         )
         return {"url": result["secure_url"]}
     except Exception as e:
-        print("CLOUDINARY ERROR:", str(e))
         raise HTTPException(status_code=500, detail=f"Error al subir imagen: {str(e)}")
+
+@api_router.post("/baglists/{baglist_id}/products/{product_id}/click")
+async def register_click(baglist_id: str, product_id: str):
+    await db.clicks.insert_one({
+        "id": str(uuid.uuid4()),
+        "baglist_id": baglist_id,
+        "product_id": product_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    baglist = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "products": 1})
+    if baglist:
+        products = baglist.get("products", [])
+        for i, p in enumerate(products):
+            if p["id"] == product_id:
+                products[i]["clicks"] = p.get("clicks", 0) + 1
+                break
+        await db.baglists.update_one({"id": baglist_id}, {"$set": {"products": products}})
+    return {"ok": True}
+
 @api_router.get("/categories")
 async def get_categories():
     return CATEGORIES
@@ -665,8 +688,8 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(','),
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )

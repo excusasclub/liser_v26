@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Bookmark, ExternalLink, Package, ArrowLeft, Edit, Share2, Loader2, Copy, Check, Instagram, Youtube, Twitch } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -24,6 +24,11 @@ export default function BagListDetailPage() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleProductClick = async (baglistId, productId) => {
+    try {
+      await axios.post(`${API}/baglists/${baglistId}/products/${productId}/click`);
+    } catch { /* silencioso, no interrumpir al usuario */ }
+  };
   useEffect(() => {
     const fetchBaglist = async () => {
       try {
@@ -40,7 +45,7 @@ export default function BagListDetailPage() {
   const handleFavorite = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
     try {
-      const res = await axios.post(`${API}/baglists/${id}/favorite`, {}, { headers: getAuthHeaders() });
+      const res = await axios.post(`${API}/baglists/${baglist.id}/favorite`, {}, { headers: getAuthHeaders() });
       setBaglist(prev => ({ ...prev, is_favorited: res.data.favorited, favorites_count: prev.favorites_count + (res.data.favorited ? 1 : -1) }));
     } catch { toast.error('Error'); }
   };
@@ -48,7 +53,7 @@ export default function BagListDetailPage() {
   const handleSave = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
     try {
-      const res = await axios.post(`${API}/baglists/${id}/save`, {}, { headers: getAuthHeaders() });
+      const res = await axios.post(`${API}/baglists/${baglist.id}/save`, {}, { headers: getAuthHeaders() });
       setBaglist(prev => ({ ...prev, is_saved: res.data.saved, saves_count: prev.saves_count + (res.data.saved ? 1 : -1) }));
     } catch { toast.error('Error'); }
   };
@@ -121,6 +126,7 @@ export default function BagListDetailPage() {
           )}
           <Link to={`/user/${baglist.username}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
             <Avatar className="w-6 h-6">
+              <AvatarImage src={baglist.avatar_url} alt={baglist.display_name} />
               <AvatarFallback className="bg-primary/20 text-primary text-xs">{baglist.display_name?.charAt(0)?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <span>{baglist.display_name}</span>
@@ -171,7 +177,9 @@ export default function BagListDetailPage() {
             <Card key={product.id} data-testid={`product-card-${product.id}`}
               className="group border-border/50 bg-card hover:border-primary/20 transition-all duration-300 overflow-hidden">
               <CardContent className="p-0 flex">
-                <div className="w-32 shrink-0 overflow-hidden bg-muted">
+                <a href={product.link} target="_blank" rel="noopener noreferrer"
+                  onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}
+                  className="w-32 shrink-0 overflow-hidden bg-muted block">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
                   ) : (
@@ -179,10 +187,17 @@ export default function BagListDetailPage() {
                       <Package className="w-8 h-8 text-muted-foreground/30" />
                     </div>
                   )}
-                </div>
+                </a>
                 <div className="flex-1 p-4 flex flex-col gap-2 min-w-0">
                   {/* Nombre */}
-                  <h3 className="font-semibold text-foreground text-sm font-['Outfit']">{product.name}</h3>
+                  {product.link ? (
+                    <a href={product.link} target="_blank" rel="noopener noreferrer"
+                      onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}>
+                      <h3 className="font-semibold text-foreground text-sm font-['Outfit'] hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
+                    </a>
+                  ) : (
+                    <h3 className="font-semibold text-foreground text-sm font-['Outfit']">{product.name}</h3>
+                  )}
 
                   {/* Descripción completa */}
                   {product.description && (
@@ -228,7 +243,8 @@ export default function BagListDetailPage() {
                       </button>
                     )}
                     {product.link && (
-                      <a href={product.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                      <a href={product.link} target="_blank" rel="noopener noreferrer"
+                        onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}>
                         <Button size="sm" className="gap-1.5 text-xs h-7 px-3 bg-primary hover:bg-primary/90 text-primary-foreground">
                           <ExternalLink className="w-3 h-3" /> Ver producto
                         </Button>
