@@ -6,9 +6,9 @@ import { ArrowRight, Layers, Heart, Filter, TrendingUp, Sparkles } from 'lucide-
 
 export default function LandingPage() {
   const features = [
-    { icon: Layers, title: 'Listas Visuales', desc: 'Crea BagLists con productos organizados de forma atractiva y profesional.' },
-    { icon: Filter, title: 'Filtros Inteligentes', desc: 'Descubre listas por categoria, popularidad o busqueda avanzada.' },
-    { icon: Heart, title: 'Interaccion Social', desc: 'Dale favorito y guarda las listas que mas te gusten.' },
+    { icon: Layers, title: 'BagLists Visuales', desc: 'Crea BagLists con productos organizados de forma atractiva y profesional.' },
+    { icon: Filter, title: 'Filtros Inteligentes', desc: 'Descubre BagLists por categoria, popularidad o busqueda avanzada.' },
+    { icon: Heart, title: 'Interaccion Social', desc: 'Dale favorito y guarda las BagLists que mas te gusten.' },
     { icon: TrendingUp, title: 'Listo para Crecer', desc: 'Plataforma escalable con base para afiliacion y analytics.' },
   ];
 

@@ -61,14 +61,14 @@ export default function ExplorePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="explore-page">
       <Helmet>
-        <title>Explorar listas — Liser</title>
-        <meta name="description" content="Descubre listas de productos curadas por la comunidad de Liser" />
-        <meta property="og:title" content="Explorar listas — Liser" />
-        <meta property="og:description" content="Descubre listas de productos curadas por la comunidad de Liser" />
+        <title>Explorar BagLists — Liser</title>
+        <meta name="description" content="Descubre BagLists de productos curadas por la comunidad de Liser" />
+        <meta property="og:title" content="Explorar BagLists — Liser" />
+        <meta property="og:description" content="Descubre BagLists de productos curadas por la comunidad de Liser" />
       </Helmet>
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-['Outfit'] text-foreground mb-2">Explorar BagLists</h1>
-        <p className="text-muted-foreground">Descubre listas de productos curadas por la comunidad</p>
+        <p className="text-muted-foreground">Descubre BagLists de productos curadas por la comunidad</p>
       </div>
 
       {/* Filters */}

@@ -56,7 +56,7 @@ export default function SavedPage() {
 
         <TabsContent value="saved">
           {saved.length === 0 ? (
-            <EmptyState icon={Package} text="No has guardado ninguna lista aun. Explora y guarda las que te gusten." />
+            <EmptyState icon={Package} text="No has guardado ninguna BagList aun. Explora y guarda las que te gusten." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {saved.map(b => <BagListCard key={b.id} baglist={b} onUpdate={updateSaved} />)}
@@ -66,7 +66,7 @@ export default function SavedPage() {
 
         <TabsContent value="favorites">
           {favorites.length === 0 ? (
-            <EmptyState icon={Package} text="No has marcado ninguna lista como favorita aun." />
+            <EmptyState icon={Package} text="No has marcado ninguna BagList como favorita aun." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {favorites.map(b => <BagListCard key={b.id} baglist={b} onUpdate={updateFavorites} />)}

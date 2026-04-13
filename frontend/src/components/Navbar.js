@@ -38,7 +38,7 @@ export function Navbar() {
                   <>
                     <Link to="/dashboard" data-testid="nav-dashboard">
                       <Button variant={isActive('/dashboard') ? 'secondary' : 'ghost'} size="sm" className="gap-2">
-                        <LayoutDashboard className="w-4 h-4" /> Mis Listas
+                        <LayoutDashboard className="w-4 h-4" /> Mis BagLists
                       </Button>
                     </Link>
                     <Link to="/saved" data-testid="nav-saved">
@@ -58,7 +58,7 @@ export function Navbar() {
                   </Button>
                   <Link to="/create" data-testid="nav-create">
                     <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 neon-glow">
-                      <Plus className="w-4 h-4" /> Nueva Lista
+                      <Plus className="w-4 h-4" /> Nueva BagList
                     </Button>
                   </Link>
                   <DropdownMenu>
@@ -114,7 +114,7 @@ export function Navbar() {
             <>
               <Link to="/dashboard" className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isActive('/dashboard') ? 'text-primary' : 'text-muted-foreground'}`}>
                 <LayoutDashboard className="w-5 h-5" />
-                <span className="text-xs">Mis Listas</span>
+                <span className="text-xs">Mis BagLists</span>
               </Link>
               <Link to="/create" className="flex flex-col items-center gap-1 px-3 py-2">
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">

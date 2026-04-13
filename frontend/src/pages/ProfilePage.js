@@ -95,8 +95,8 @@ export default function ProfilePage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab.id
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
           >
             {tab.label}
@@ -111,7 +111,7 @@ export default function ProfilePage() {
           <div className="text-center py-16">
             <Package className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground">
-              {isOwnProfile ? 'Aún no tienes listas. ¡Crea una!' : 'Este usuario no tiene listas públicas aún'}
+              {isOwnProfile ? 'Aún no tienes BagLists. ¡Crea una!' : 'Este usuario no tiene BagLists públicas aún'}
             </p>
           </div>
         ) : (

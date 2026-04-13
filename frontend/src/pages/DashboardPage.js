@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold font-['Outfit'] text-foreground">Mis BagLists</h1>
-          <p className="text-muted-foreground mt-1">Administra y organiza tus listas de productos</p>
+          <p className="text-muted-foreground mt-1">Administra y organiza tus BagLists</p>
         </div>
         <Link to="/create" data-testid="dashboard-create-btn">
           <Button className="bg-primary hover:bg-primary/90 neon-glow gap-2">
@@ -92,7 +92,7 @@ export default function DashboardPage() {
       ) : baglists.length === 0 ? (
         <div className="text-center py-20">
           <Package className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground font-['Outfit'] mb-2">Sin listas aun</h3>
+          <h3 className="text-lg font-semibold text-foreground font-['Outfit'] mb-2">Sin BagLists aún</h3>
           <p className="text-muted-foreground mb-6">Crea tu primera BagList para empezar a organizar productos.</p>
           <Link to="/create">
             <Button className="bg-primary hover:bg-primary/90 neon-glow gap-2">
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         <DialogContent className="bg-card border-border">
           <DialogHeader>
             <DialogTitle>Eliminar BagList</DialogTitle>
-            <DialogDescription>Esta accion no se puede deshacer. Se eliminaran todos los productos de esta lista.</DialogDescription>
+            <DialogDescription>Esta acción no se puede deshacer. Se eliminarán todos los productos de esta BagList.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)} data-testid="cancel-delete-btn">Cancelar</Button>
