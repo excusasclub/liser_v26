@@ -77,6 +77,9 @@ class ProductClick(BaseModel):
     baglist_id: str
     product_id: str
 
+class FollowerCapture(BaseModel):
+    email: EmailStr
+
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     image_url: Optional[str] = Field(default="", max_length=500)
@@ -676,6 +679,18 @@ async def register_click(baglist_id: str, product_id: str):
         await db.baglists.update_one({"id": baglist_id}, {"$set": {"products": products}})
     return {"ok": True}
 
+@api_router.post("/baglists/{baglist_id}/follow")
+async def follow_baglist(baglist_id: str, data: FollowerCapture):
+    existing = await db.followers.find_one({"email": data.email, "baglist_id": baglist_id})
+    if not existing:
+        await db.followers.insert_one({
+            "id": str(uuid.uuid4()),
+            "email": data.email,
+            "baglist_id": baglist_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    return {"ok": True}
+
 @api_router.get("/categories")
 async def get_categories():
     return CATEGORIES
@@ -704,6 +719,7 @@ async def startup():
     await db.baglists.create_index("category")
     await db.favorites.create_index([("user_id", 1), ("baglist_id", 1)], unique=True)
     await db.saves.create_index([("user_id", 1), ("baglist_id", 1)], unique=True)
+    await db.followers.create_index([("email", 1), ("baglist_id", 1)], unique=True)
     logger.info("Liser API started, indexes created")
 
 @app.on_event("shutdown")

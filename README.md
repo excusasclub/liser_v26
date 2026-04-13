@@ -1,129 +1,115 @@
-# Liser v26 - AI-Powered Excuse Generator
+Tiene toda la razón, disculpa. Aquí va el README correcto y actualizado:
 
-Liser v26 is a modern web application that uses artificial intelligence to generate creative and context-aware excuses for various situations. Built with React and Flask, it provides a seamless user experience for finding the perfect excuse when you need one.
+---
 
-## Features
+Liser — Plataforma de BagLists para Creadores de Contenido
 
-- **AI-Powered Generation**: Generates excuses using advanced AI models
-- **Modern UI**: Clean, responsive interface with Tailwind CSS
-- **User Authentication**: Secure login and profile management
-- **Bag List Management**: Create, view, and manage your excuse lists
-- **Explore**: Discover trending and popular excuses
-- **Saved Excuses**: Save your favorite excuses for quick access
+Liser es una plataforma web que permite a creadores de contenido e influencers organizar y compartir listas de productos curadas (BagLists) de forma visual, estructurada y optimizada para el descubrimiento.
 
-## Getting Started
+CARACTERÍSTICAS
 
-### Prerequisites
+- Autenticación completa: Registro, login y gestión de perfil con JWT
+- BagLists: Crea, edita y gestiona listas de productos con imagen de portada, categoría y etiquetas
+- Gestión de productos: Añade productos con nombre, imagen, precio, moneda, enlace, descripción, código de descuento y campos personalizados
+- Explorar: Descubre listas públicas con filtros por categoría, búsqueda y ordenación
+- Favoritos y guardados: Guarda las listas que más te gusten
+- Perfiles públicos: Cada usuario tiene su página de perfil con sus listas públicas
+- Upload de imágenes: Subida de imágenes integrada vía Cloudinary
+- Click tracking: Registro de clics en productos para analítica futura
+- Dashboard: Panel de control con estadísticas del usuario
 
-- Node.js (v14 or higher)
-- Python (v3.8 or higher)
-- npm
+STACK TECNOLÓGICO
 
-### Installation
+Backend: FastAPI (Python 3.10+) con Motor (MongoDB async)
+Frontend: React 19 + Tailwind CSS + shadcn/ui
+Base de datos: MongoDB
+Imágenes: Cloudinary
+Autenticación: JWT (PyJWT + bcrypt)
 
-1. **Clone the repository**
-   ```bash
+REQUISITOS PREVIOS
+
+- Node.js v18 o superior
+- Python 3.10 o superior
+- MongoDB (local o Atlas)
+- Cuenta de Cloudinary (gratuita)
+- npm o yarn
+
+INSTALACIÓN
+
+1. Clonar el repositorio
    git clone <repository-url>
    cd liser_v26
-   ```
 
-2. **Backend Setup**
-   ```bash
+2. Configurar el backend
    cd backend
    pip install -r requirements.txt
-   # Create .env file based on .env.example
    cp .env.example .env
-   # Configure your API keys in .env
-   ```
 
-3. **Frontend Setup**
-   ```bash
+   Variables de entorno necesarias en .env:
+   MONGO_URL=mongodb://localhost:27017
+   DB_NAME=liser_db
+   JWT_SECRET=tu_secreto_seguro
+   CLOUDINARY_CLOUD_NAME=tu_cloud_name
+   CLOUDINARY_API_KEY=tu_api_key
+   CLOUDINARY_API_SECRET=tu_api_secret
+   CORS_ORIGINS=http://localhost:3000
+
+3. Configurar el frontend
    cd frontend
    npm install
-   ```
 
-### Running the Application
+   Crear archivo .env en /frontend:
+   REACT_APP_BACKEND_URL=http://localhost:8001
 
-1. **Start the backend**
-   ```bash
+EJECUCIÓN
+
+1. Iniciar el backend (puerto 8001)
    cd backend
-   python server.py
-   ```
+   uvicorn server:app --reload --port 8001
 
-2. **Start the frontend**
-   ```bash
+2. Iniciar el frontend (puerto 3000)
    cd frontend
    npm start
-   ```
 
-The application will be available at `http://localhost:3000`
+La aplicación estará disponible en http://localhost:3000
+La documentación de la API (Swagger) en http://localhost:8001/docs
 
-## Project Structure
+ESTRUCTURA DEL PROYECTO
 
-```
 liser_v26/
-├── backend/              # Flask backend application
-│   ├── server.py         # Main server file
-│   ├── requirements.txt  # Python dependencies
-│   └── .env              # Environment variables
-├── frontend/             # React frontend application
+├── backend/
+│   ├── server.py           — API principal (FastAPI)
+│   ├── migrate.py          — Script de migración de datos
+│   └── requirements.txt    — Dependencias Python
+├── frontend/
 │   ├── src/
-│   │   ├── components/   # UI components
-│   │   ├── pages/        # Page components
-│   │   ├── context/      # React Context
-│   │   └── hooks/        # Custom hooks
-│   ├── public/           # Public assets
-│   ├── package.json      # Frontend dependencies
-│   └── tailwind.config.js# Tailwind configuration
-├── memory/               # AI memory and prompts
-├── test_reports/         # Test results
-└── tests/                # Unit tests
-```
+│   │   ├── components/     — Componentes reutilizables
+│   │   ├── pages/          — Páginas de la aplicación
+│   │   ├── context/        — AuthContext y estado global
+│   │   └── hooks/          — Custom hooks
+│   ├── public/
+│   ├── package.json
+│   └── tailwind.config.js
+├── memory/                 — PRD y documentación de producto
+├── test_reports/           — Resultados de tests
+├── tests/                  — Suite de tests
+└── backend_test.py         — Tests de integración de la API
 
-## Development
+MIGRACIONES
 
-### Adding New Features
+Si actualizas desde una versión anterior, ejecuta el script de migración:
+   cd backend
+   python migrate.py
 
-1. Create a new branch:
-   ```bash
-   git checkout -b feature/new-feature
-   ```
+TESTS
 
-2. Make your changes in the `frontend/` or `backend/` directories
+Backend (integración):
+   python backend_test.py
 
-3. Test your changes
+Frontend:
+   cd frontend
+   npm test
 
-4. Commit and push:
-   ```bash
-   git add .
-   git commit -m "Add new feature"
-   git push origin feature/new-feature
-   ```
+LICENCIA
 
-### Running Tests
-
-**Backend Tests**
-```bash
-cd backend
-pytest
-```
-
-**Frontend Tests**
-```bash
-cd frontend
-npm test
-```
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License — ver archivo LICENSE para más detalles.
