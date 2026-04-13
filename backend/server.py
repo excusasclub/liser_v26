@@ -699,7 +699,7 @@ async def get_categories():
 async def root():
     return {"message": "Liser API"}
 
-app.include_router(api_router)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -708,6 +708,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup():
