@@ -12,9 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 } from '@/components/ui/dialog';
-import { Plus, X, Package, GripVertical, Trash2, Save, ArrowLeft, Loader2, Edit } from 'lucide-react';
-import { ImageUpload } from '@/components/ImageUpload';
+import { Plus, X, Package, GripVertical, Trash2, Save, ArrowLeft, Loader2, Edit, Copy } from 'lucide-react';
 import axios from 'axios';
+import { ImageUpload } from '@/components/ImageUpload';
 import { toast } from 'sonner';
 
 export default function CreateBagListPage() {
@@ -32,6 +32,10 @@ export default function CreateBagListPage() {
   const [tagInput, setTagInput] = useState('');
   const [products, setProducts] = useState([]);
   const [showProductDialog, setShowProductDialog] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicatingProduct, setDuplicatingProduct] = useState(null);
+  const [myBaglists, setMyBaglists] = useState([]);
+  const [targetBaglistId, setTargetBaglistId] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '', image_url: '', price: '', currency: 'EUR', link: '', description: '', discount_code: '', custom_fields: [], social_links: []
@@ -210,6 +214,10 @@ export default function CreateBagListPage() {
                         <div className="flex items-center gap-1 shrink-0">
                           <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openProductDialog(p)}>
                             <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="w-7 h-7" title="Duplicar en otra BagList"
+                            onClick={() => { setDuplicatingProduct(p); setTargetBaglistId(''); setShowDuplicateDialog(true); axios.get(`${API}/baglists/my`, { headers: getAuthHeaders() }).then(res => setMyBaglists(res.data)); }}>
+                            <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                           </Button>
                           <Button variant="ghost" size="icon" className="w-7 h-7" data-testid={`delete-product-${p.id}`}
                             onClick={() => deleteProduct(p.id)}>
@@ -402,6 +410,40 @@ export default function CreateBagListPage() {
             <Button variant="outline" onClick={() => setShowProductDialog(false)}>Cancelar</Button>
             <Button onClick={saveProduct} data-testid="save-product-btn" className="bg-primary hover:bg-primary/90">
               {editingProduct ? 'Guardar' : 'Agregar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Duplicar producto</DialogTitle>
+            <DialogDescription>Elige la BagList donde quieres copiar <strong>{duplicatingProduct?.name}</strong>.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <Select value={targetBaglistId} onValueChange={setTargetBaglistId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona una BagList" />
+              </SelectTrigger>
+              <SelectContent>
+                {myBaglists.filter(b => b.id !== id).map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDuplicateDialog(false)}>Cancelar</Button>
+            <Button disabled={!targetBaglistId} className="bg-primary hover:bg-primary/90"
+              onClick={async () => {
+                try {
+                  await axios.post(`${API}/baglists/${id}/products/${duplicatingProduct.id}/duplicate`, { target_baglist_id: targetBaglistId }, { headers: getAuthHeaders() });
+                  toast.success('Producto duplicado correctamente');
+                  setShowDuplicateDialog(false);
+                } catch { toast.error('Error al duplicar el producto'); }
+              }}>
+              Duplicar
             </Button>
           </DialogFooter>
         </DialogContent>

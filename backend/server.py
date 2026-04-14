@@ -518,6 +518,33 @@ async def update_product(baglist_id: str, product_id: str, data: ProductCreate, 
     await db.baglists.update_one({"id": baglist_id}, {"$set": {"products": products, "updated_at": datetime.now(timezone.utc).isoformat()}})
     return products[i]
 
+@api_router.post("/baglists/{baglist_id}/products/{product_id}/duplicate")
+async def duplicate_product(baglist_id: str, product_id: str, data: dict, user=Depends(get_required_user)):
+    target_baglist_id = data.get("target_baglist_id")
+    if not target_baglist_id:
+        raise HTTPException(status_code=400, detail="target_baglist_id requerido")
+    source = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "products": 1})
+    if not source:
+        raise HTTPException(status_code=404, detail="BagList origen no encontrada")
+    product = next((p for p in source.get("products", []) if p["id"] == product_id), None)
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    target = await db.baglists.find_one({"id": target_baglist_id, "user_id": user["id"]}, {"_id": 0, "products": 1})
+    if not target:
+        raise HTTPException(status_code=404, detail="BagList destino no encontrada")
+    new_product = {
+        **product,
+        "id": str(uuid.uuid4()),
+        "position": len(target.get("products", [])),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.baglists.update_one(
+        {"id": target_baglist_id},
+        {"$push": {"products": new_product}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return new_product
+
 @api_router.delete("/baglists/{baglist_id}/products/{product_id}")
 async def delete_product(baglist_id: str, product_id: str, user=Depends(get_required_user)):
     result = await db.baglists.update_one(
