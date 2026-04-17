@@ -36,6 +36,9 @@ export default function CreateBagListPage() {
   const [duplicatingProduct, setDuplicatingProduct] = useState(null);
   const [myBaglists, setMyBaglists] = useState([]);
   const [targetBaglistId, setTargetBaglistId] = useState('');
+  const [productDialogTab, setProductDialogTab] = useState('new');
+  const [copySourceBaglistId, setCopySourceBaglistId] = useState('');
+  const [copySourceProducts, setCopySourceProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '', image_url: '', price: '', currency: 'EUR', link: '', description: '', discount_code: '', custom_fields: [], social_links: []
@@ -281,137 +284,194 @@ export default function CreateBagListPage() {
       </div>
 
       {/* Product Dialog */}
-      <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
+      <Dialog open={showProductDialog} onOpenChange={(open) => { setShowProductDialog(open); if (!open) { setProductDialogTab('new'); setCopySourceBaglistId(''); setCopySourceProducts([]); } }}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="font-['Outfit']">{editingProduct ? 'Editar Producto' : 'Agregar Producto'}</DialogTitle>
             <DialogDescription>Completa la información del producto</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Nombre *</Label>
-              <Input data-testid="product-name-input" value={productForm.name} placeholder="Nombre del producto"
-                onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} />
+          {!editingProduct && (
+            <div className="flex gap-2 border border-border rounded-lg p-1">
+              <button
+                onClick={() => setProductDialogTab('new')}
+                className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${productDialogTab === 'new' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                Nuevo producto
+              </button>
+              <button
+                onClick={() => { setProductDialogTab('copy'); if (myBaglists.length === 0) axios.get(`${API}/baglists/my`, { headers: getAuthHeaders() }).then(res => setMyBaglists(res.data)); }}
+                className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${productDialogTab === 'copy' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                Copiar existente
+              </button>
             </div>
-            <div className="space-y-2">
-              <Label>Imagen</Label>
-              <ImageUpload
-                value={productForm.image_url}
-                onChange={(url) => setProductForm({ ...productForm, image_url: url })}
-                placeholder="Subir imagen"
-              />
-              <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-              <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
-                onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
+          )}
+          {productDialogTab === 'copy' && !editingProduct && (
+            <div className="space-y-3 py-2">
+              <Select value={copySourceBaglistId} onValueChange={(val) => {
+                setCopySourceBaglistId(val);
+                const bl = myBaglists.find(b => b.id === val);
+                setCopySourceProducts(bl?.products || []);
+              }}>
+                <SelectTrigger><SelectValue placeholder="Selecciona una BagList" /></SelectTrigger>
+                <SelectContent>
+                  {myBaglists.map(b => <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {copySourceProducts.length > 0 && (
+                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                  {copySourceProducts.map(p => (
+                    <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg border border-border hover:border-primary/40 cursor-pointer transition-colors"
+                      onClick={async () => {
+                        try {
+                          await axios.post(`${API}/baglists/${copySourceBaglistId}/products/${p.id}/duplicate`, { target_baglist_id: id }, { headers: getAuthHeaders() });
+                          const res = await axios.get(`${API}/baglists/${id}`, { headers: getAuthHeaders() });
+                          setProducts(res.data.products || []);
+                          toast.success(`"${p.name}" añadido`);
+                          setShowProductDialog(false);
+                        } catch { toast.error('Error al copiar el producto'); }
+                      }}>
+                      {p.image_url ? <img src={p.image_url} alt={p.name} className="w-10 h-10 object-cover rounded" /> : <div className="w-10 h-10 bg-muted rounded flex items-center justify-center"><Package className="w-4 h-4 text-muted-foreground/30" /></div>}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{p.name}</p>
+                        {p.price != null && p.price > 0 && <p className="text-xs text-muted-foreground">{p.price} {p.currency}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {copySourceBaglistId && copySourceProducts.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">Esta BagList no tiene productos.</p>
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+          )}
+          {(productDialogTab === 'new' || editingProduct) && (
+            <div className="space-y-4 py-2">
               <div className="space-y-2">
-                <Label>Precio</Label>
-                <Input data-testid="product-price-input" type="number" step="0.01" value={productForm.price} placeholder="0.00"
-                  onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} />
+                <Label>Nombre *</Label>
+                <Input data-testid="product-name-input" value={productForm.name} placeholder="Nombre del producto"
+                  onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Moneda</Label>
-                <Select value={productForm.currency} onValueChange={(v) => setProductForm({ ...productForm, currency: v })}>
-                  <SelectTrigger data-testid="product-currency-select"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="MXN">MXN</SelectItem>
-                    <SelectItem value="COP">COP</SelectItem>
-                    <SelectItem value="ARS">ARS</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Imagen</Label>
+                <ImageUpload
+                  value={productForm.image_url}
+                  onChange={(url) => setProductForm({ ...productForm, image_url: url })}
+                  placeholder="Subir imagen"
+                />
+                <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
+                <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
+                  onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Precio</Label>
+                  <Input data-testid="product-price-input" type="number" step="0.01" value={productForm.price} placeholder="0.00"
+                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Moneda</Label>
+                  <Select value={productForm.currency} onValueChange={(v) => setProductForm({ ...productForm, currency: v })}>
+                    <SelectTrigger data-testid="product-currency-select"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="MXN">MXN</SelectItem>
+                      <SelectItem value="COP">COP</SelectItem>
+                      <SelectItem value="ARS">ARS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Enlace del Producto</Label>
+                <Input data-testid="product-link-input" value={productForm.link} placeholder="https://..."
+                  onChange={(e) => setProductForm({ ...productForm, link: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Descripción</Label>
+                <Textarea data-testid="product-description-input" rows={2} value={productForm.description} placeholder="Descripción breve..."
+                  onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Código de descuento</Label>
+                <Input data-testid="product-discount-input" value={productForm.discount_code} placeholder="Ej: VERANO20"
+                  onChange={(e) => setProductForm({ ...productForm, discount_code: e.target.value.toUpperCase() })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Redes sociales</Label>
+                {(productForm.social_links || []).map((link, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <select
+                      value={link.network}
+                      onChange={(e) => {
+                        const updated = [...productForm.social_links];
+                        updated[idx].network = e.target.value;
+                        setProductForm({ ...productForm, social_links: updated });
+                      }}
+                      className="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground"
+                    >
+                      <option value="instagram">Instagram</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="tiktok">TikTok</option>
+                      <option value="twitter">Twitter/X</option>
+                      <option value="pinterest">Pinterest</option>
+                      <option value="twitch">Twitch</option>
+                    </select>
+                    <Input placeholder="https://..." value={link.url}
+                      onChange={(e) => {
+                        const updated = [...productForm.social_links];
+                        updated[idx].url = e.target.value;
+                        setProductForm({ ...productForm, social_links: updated });
+                      }} />
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      setProductForm({ ...productForm, social_links: productForm.social_links.filter((_, i) => i !== idx) });
+                    }}>
+                      <X className="w-4 h-4 text-red-400" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" type="button" className="gap-2 w-full"
+                  onClick={() => setProductForm({ ...productForm, social_links: [...(productForm.social_links || []), { network: 'instagram', url: '' }] })}>
+                  <Plus className="w-4 h-4" /> Añadir red social
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <Label>Campos personalizados</Label>
+                {(productForm.custom_fields || []).map((field, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Nombre (ej: Peso)" value={field.key}
+                      onChange={(e) => {
+                        const updated = [...productForm.custom_fields];
+                        updated[idx].key = e.target.value;
+                        setProductForm({ ...productForm, custom_fields: updated });
+                      }} />
+                    <Input placeholder="Valor (ej: 1.2kg)" value={field.value}
+                      onChange={(e) => {
+                        const updated = [...productForm.custom_fields];
+                        updated[idx].value = e.target.value;
+                        setProductForm({ ...productForm, custom_fields: updated });
+                      }} />
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      setProductForm({ ...productForm, custom_fields: productForm.custom_fields.filter((_, i) => i !== idx) });
+                    }}>
+                      <X className="w-4 h-4 text-red-400" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" type="button" className="gap-2 w-full"
+                  onClick={() => setProductForm({ ...productForm, custom_fields: [...(productForm.custom_fields || []), { key: '', value: '' }] })}>
+                  <Plus className="w-4 h-4" /> Añadir campo
+                </Button>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Enlace del Producto</Label>
-              <Input data-testid="product-link-input" value={productForm.link} placeholder="https://..."
-                onChange={(e) => setProductForm({ ...productForm, link: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Descripción</Label>
-              <Textarea data-testid="product-description-input" rows={2} value={productForm.description} placeholder="Descripción breve..."
-                onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Código de descuento</Label>
-              <Input data-testid="product-discount-input" value={productForm.discount_code} placeholder="Ej: VERANO20"
-                onChange={(e) => setProductForm({ ...productForm, discount_code: e.target.value.toUpperCase() })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Redes sociales</Label>
-              {(productForm.social_links || []).map((link, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <select
-                    value={link.network}
-                    onChange={(e) => {
-                      const updated = [...productForm.social_links];
-                      updated[idx].network = e.target.value;
-                      setProductForm({ ...productForm, social_links: updated });
-                    }}
-                    className="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground"
-                  >
-                    <option value="instagram">Instagram</option>
-                    <option value="youtube">YouTube</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="twitter">Twitter/X</option>
-                    <option value="pinterest">Pinterest</option>
-                    <option value="twitch">Twitch</option>
-                  </select>
-                  <Input placeholder="https://..." value={link.url}
-                    onChange={(e) => {
-                      const updated = [...productForm.social_links];
-                      updated[idx].url = e.target.value;
-                      setProductForm({ ...productForm, social_links: updated });
-                    }} />
-                  <Button variant="ghost" size="icon" onClick={() => {
-                    setProductForm({ ...productForm, social_links: productForm.social_links.filter((_, i) => i !== idx) });
-                  }}>
-                    <X className="w-4 h-4 text-red-400" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" type="button" className="gap-2 w-full"
-                onClick={() => setProductForm({ ...productForm, social_links: [...(productForm.social_links || []), { network: 'instagram', url: '' }] })}>
-                <Plus className="w-4 h-4" /> Añadir red social
+          )}
+          {(productDialogTab === 'new' || editingProduct) && (
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowProductDialog(false)}>Cancelar</Button>
+              <Button onClick={saveProduct} data-testid="save-product-btn" className="bg-primary hover:bg-primary/90">
+                {editingProduct ? 'Guardar' : 'Agregar'}
               </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Campos personalizados</Label>
-              {(productForm.custom_fields || []).map((field, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <Input placeholder="Nombre (ej: Peso)" value={field.key}
-                    onChange={(e) => {
-                      const updated = [...productForm.custom_fields];
-                      updated[idx].key = e.target.value;
-                      setProductForm({ ...productForm, custom_fields: updated });
-                    }} />
-                  <Input placeholder="Valor (ej: 1.2kg)" value={field.value}
-                    onChange={(e) => {
-                      const updated = [...productForm.custom_fields];
-                      updated[idx].value = e.target.value;
-                      setProductForm({ ...productForm, custom_fields: updated });
-                    }} />
-                  <Button variant="ghost" size="icon" onClick={() => {
-                    setProductForm({ ...productForm, custom_fields: productForm.custom_fields.filter((_, i) => i !== idx) });
-                  }}>
-                    <X className="w-4 h-4 text-red-400" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" type="button" className="gap-2 w-full"
-                onClick={() => setProductForm({ ...productForm, custom_fields: [...(productForm.custom_fields || []), { key: '', value: '' }] })}>
-                <Plus className="w-4 h-4" /> Añadir campo
-              </Button>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowProductDialog(false)}>Cancelar</Button>
-            <Button onClick={saveProduct} data-testid="save-product-btn" className="bg-primary hover:bg-primary/90">
-              {editingProduct ? 'Guardar' : 'Agregar'}
-            </Button>
-          </DialogFooter>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 
