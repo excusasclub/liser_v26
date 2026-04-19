@@ -1,5 +1,3 @@
-Tiene toda la razón, disculpa. Aquí va el README correcto y actualizado:
-
 ---
 
 Liser — Plataforma de BagLists para Creadores de Contenido
