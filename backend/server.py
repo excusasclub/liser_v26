@@ -694,6 +694,7 @@ async def register_click(baglist_id: str, product_id: str):
         "id": str(uuid.uuid4()),
         "baglist_id": baglist_id,
         "product_id": product_id,
+        "type": "affiliate",
         "created_at": datetime.now(timezone.utc).isoformat()
     })
     baglist = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "products": 1})
@@ -706,6 +707,18 @@ async def register_click(baglist_id: str, product_id: str):
         await db.baglists.update_one({"id": baglist_id}, {"$set": {"products": products}})
     return {"ok": True}
 
+@api_router.post("/baglists/{baglist_id}/products/{product_id}/discount-click")
+async def register_discount_click(baglist_id: str, product_id: str):
+    await db.clicks.insert_one({
+        "id": str(uuid.uuid4()),
+        "baglist_id": baglist_id,
+        "product_id": product_id,
+        "type": "discount",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"ok": True}
+
+
 @api_router.post("/baglists/{baglist_id}/follow")
 async def follow_baglist(baglist_id: str, data: FollowerCapture):
     existing = await db.followers.find_one({"email": data.email, "baglist_id": baglist_id})
@@ -717,6 +730,77 @@ async def follow_baglist(baglist_id: str, data: FollowerCapture):
             "created_at": datetime.now(timezone.utc).isoformat()
         })
     return {"ok": True}
+
+
+@api_router.get("/baglists/{baglist_id}/analytics")
+async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)):
+    baglist = await db.baglists.find_one({"id": baglist_id, "user_id": user["id"]}, {"_id": 0})
+    if not baglist:
+        raise HTTPException(status_code=404, detail="BagList not found")
+    clicks = await db.clicks.find({"baglist_id": baglist_id}, {"_id": 0}).to_list(10000)
+    affiliate_clicks = [c for c in clicks if c.get("type", "affiliate") == "affiliate"]
+    discount_clicks = [c for c in clicks if c.get("type") == "discount"]
+    product_affiliate = {}
+    product_discount = {}
+    for c in affiliate_clicks:
+        pid = c["product_id"]
+        product_affiliate[pid] = product_affiliate.get(pid, 0) + 1
+    for c in discount_clicks:
+        pid = c["product_id"]
+        product_discount[pid] = product_discount.get(pid, 0) + 1
+    # Clics por mes
+    monthly = {}
+    for c in affiliate_clicks:
+        month = c["created_at"][:7]
+        monthly[month] = monthly.get(month, 0) + 1
+    monthly_sorted = [{"month": k, "clicks": v} for k, v in sorted(monthly.items())]
+    products = baglist.get("products", [])
+    product_stats = sorted([
+        {
+            "id": p["id"],
+            "name": p["name"],
+            "image_url": p.get("image_url", ""),
+            "clicks": product_affiliate.get(p["id"], 0),
+            "discount_clicks": product_discount.get(p["id"], 0)
+        }
+        for p in products
+    ], key=lambda x: x["clicks"], reverse=True)
+    followers = await db.followers.count_documents({"baglist_id": baglist_id})
+    return {
+        "baglist_id": baglist_id,
+        "title": baglist["title"],
+        "total_clicks": len(affiliate_clicks),
+        "total_discount_clicks": len(discount_clicks),
+        "favorites_count": baglist.get("favorites_count", 0),
+        "saves_count": baglist.get("saves_count", 0),
+        "followers": followers,
+        "monthly_clicks": monthly_sorted,
+        "products": product_stats
+    }
+
+@api_router.get("/users/me/analytics")
+async def get_user_analytics(user=Depends(get_required_user)):
+    baglists = await db.baglists.find({"user_id": user["id"]}, {"_id": 0, "id": 1, "title": 1}).to_list(100)
+    baglist_ids = [b["id"] for b in baglists]
+    clicks = await db.clicks.find({"baglist_id": {"$in": baglist_ids}, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}, {"_id": 0}).to_list(100000)
+    baglist_clicks = {}
+    monthly = {}
+    for c in clicks:
+        bid = c["baglist_id"]
+        baglist_clicks[bid] = baglist_clicks.get(bid, 0) + 1
+        month = c["created_at"][:7]
+        monthly[month] = monthly.get(month, 0) + 1
+    monthly_sorted = [{"month": k, "clicks": v} for k, v in sorted(monthly.items())]
+    baglist_stats = sorted([
+        {"id": b["id"], "title": b["title"], "clicks": baglist_clicks.get(b["id"], 0)}
+        for b in baglists
+    ], key=lambda x: x["clicks"], reverse=True)
+    return {
+        "total_clicks": len(clicks),
+        "monthly_clicks": monthly_sorted,
+        "baglists": baglist_stats
+    }
+
 
 @api_router.get("/categories")
 async def get_categories():

@@ -12,7 +12,9 @@ import ExplorePage from "@/pages/ExplorePage";
 import SavedPage from "@/pages/SavedPage";
 import ProfilePage from "@/pages/ProfilePage";
 import NotFoundPage from "@/pages/NotFoundPage";
-import EditProfilePage from "@/pages/EditProfilePage";
+import EditProfilePage from '@/pages/EditProfilePage';
+import AnalyticsPage from '@/pages/AnalyticsPage';
+
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +39,8 @@ function AppContent() {
         <Route path="/edit/:id" element={<ProtectedRoute><CreateBagListPage /></ProtectedRoute>} />
         <Route path="/saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
         <Route path="/settings/profile" element={<EditProfilePage />} />
+        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster theme={theme === 'light' ? 'light' : 'dark'} position="bottom-right" />

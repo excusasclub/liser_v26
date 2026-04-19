@@ -7,7 +7,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Plus, Compass, Bookmark, LayoutDashboard, LogOut, User, Settings, Sun, Moon } from 'lucide-react';
+import { Plus, Compass, Bookmark, LayoutDashboard, LogOut, User, Settings, Sun, Moon, BarChart2 } from 'lucide-react';
 
 export function Navbar() {
   const { user, logout, theme, toggleTheme } = useAuth();
@@ -44,6 +44,11 @@ export function Navbar() {
                     <Link to="/saved" data-testid="nav-saved">
                       <Button variant={isActive('/saved') ? 'secondary' : 'ghost'} size="sm" className="gap-2">
                         <Bookmark className="w-4 h-4" /> Guardados
+                      </Button>
+                    </Link>
+                    <Link to="/analytics" data-testid="nav-analytics">
+                      <Button variant={isActive('/analytics') ? 'secondary' : 'ghost'} size="sm" className="gap-2">
+                        <BarChart2 className="w-4 h-4" /> Analíticas
                       </Button>
                     </Link>
                   </>
@@ -124,6 +129,10 @@ export function Navbar() {
               <Link to="/saved" className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isActive('/saved') ? 'text-primary' : 'text-muted-foreground'}`}>
                 <Bookmark className="w-5 h-5" />
                 <span className="text-xs">Guardados</span>
+              </Link>
+              <Link to="/analytics" className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isActive('/analytics') ? 'text-primary' : 'text-muted-foreground'}`}>
+                <BarChart2 className="w-5 h-5" />
+                <span className="text-xs">Analíticas</span>
               </Link>
               <Link to={`/user/${user.username}`} className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isActive(`/user/${user.username}`) ? 'text-primary' : 'text-muted-foreground'}`}>
                 <Avatar className="w-6 h-6">

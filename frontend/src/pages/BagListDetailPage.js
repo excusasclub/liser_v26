@@ -20,10 +20,13 @@ export default function BagListDetailPage() {
   const [copiedCode, setCopiedCode] = useState(null);
   const [showCaptureModal, setShowCaptureModal] = useState(false);
 
-  const handleCopyCode = (code) => {
+  const handleCopyCode = async (code, baglistId, productId) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+    try {
+      await axios.post(`${API}/baglists/${baglistId}/products/${productId}/discount-click`);
+    } catch { /* silencioso */ }
   };
 
   const handleProductClick = async (baglistId, productId) => {
@@ -247,7 +250,7 @@ export default function BagListDetailPage() {
                       )}
                       {product.discount_code && (
                         <button
-                          onClick={() => handleCopyCode(product.discount_code)}
+                          onClick={() => handleCopyCode(product.discount_code, baglist.id, product.id)}
                           className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-dashed border-primary/50 text-primary hover:bg-primary/10 transition-colors text-xs font-mono"
                           title="Clic para copiar"
                         >
