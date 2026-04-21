@@ -5,18 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Heart, Bookmark, Package } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 
 export function BagListCard({ baglist, onUpdate, compact = false }) {
-  const { user, getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
 
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) { toast.error('Inicia sesion para dar favorito'); return; }
     try {
-      const res = await axios.post(`${API}/baglists/${baglist.id}/favorite`, {}, { headers: getAuthHeaders() });
+      const res = await api.post(`/baglists/${baglist.id}/favorite`);
       if (onUpdate) onUpdate({ ...baglist, is_favorited: res.data.favorited, favorites_count: baglist.favorites_count + (res.data.favorited ? 1 : -1) });
     } catch { toast.error('Error'); }
   };
@@ -26,7 +26,7 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
     e.stopPropagation();
     if (!user) { toast.error('Inicia sesion para guardar'); return; }
     try {
-      const res = await axios.post(`${API}/baglists/${baglist.id}/save`, {}, { headers: getAuthHeaders() });
+      const res = await api.post(`/baglists/${baglist.id}/save`);
       if (onUpdate) onUpdate({ ...baglist, is_saved: res.data.saved, saves_count: baglist.saves_count + (res.data.saved ? 1 : -1) });
     } catch { toast.error('Error'); }
   };

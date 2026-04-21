@@ -6,14 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, SlidersHorizontal, Loader2, Package, X } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
-const CATEGORIES = ["All", "Tech", "Fashion", "Home", "Beauty", "Sports", "Food", "Travel", "Books", "Gaming", "Other"];
-
 export default function ExplorePage() {
-  const { user, getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
+  const [CATEGORIES, setCATEGORIES] = useState(["All"]);
   const [baglists, setBaglists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -31,14 +30,19 @@ export default function ExplorePage() {
     }, 400);
     return () => clearTimeout(debounceRef.current);
   }, [search]);
+  useEffect(() => {
+    api.get('/categories')
+      .then(res => setCATEGORIES(["All", ...res.data]))
+      .catch(() => { });
+  }, []);
+
   const fetchBaglists = useCallback(async () => {
     setLoading(true);
     try {
-      const headers = user ? getAuthHeaders() : {};
       const params = new URLSearchParams({ page: String(page), limit: '20', sort });
       if (category !== 'All') params.set('category', category);
       if (search) params.set('search', search);
-      const res = await axios.get(`${API}/baglists?${params}`, { headers });
+      const res = await api.get(`/baglists?${params}`);
       setBaglists(res.data.baglists);
       setTotalPages(res.data.pages);
     } catch { toast.error('Error al cargar las listas'); }

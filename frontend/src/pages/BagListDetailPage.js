@@ -7,14 +7,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Bookmark, ExternalLink, Package, ArrowLeft, Edit, Share2, Loader2, Copy, Check, Instagram, Youtube, Twitch } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import FollowerCaptureModal from '@/components/FollowerCaptureModal';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
 export default function BagListDetailPage() {
   const { username, slug } = useParams();
-  const { user, getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
   const [baglist, setBaglist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(null);
@@ -24,15 +24,41 @@ export default function BagListDetailPage() {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
-    try {
-      await axios.post(`${API}/baglists/${baglistId}/products/${productId}/discount-click`);
-    } catch { /* silencioso */ }
+    const clicks = getLiserClicks();
+    const key = `discount_${productId}`;
+    const lastClick = clicks[key];
+    const now = Date.now();
+    if (!lastClick || (now - lastClick) >= 24 * 60 * 60 * 1000) {
+      try {
+        await api.post(`/baglists/${baglistId}/products/${productId}/discount-click`);
+      } catch { /* silencioso */ }
+      clicks[key] = now;
+      setLiserClicks(clicks);
+    }
+  };
+
+  const getLiserClicks = () => {
+    const cookie = document.cookie.split(';').find(c => c.trim().startsWith('liser_clicks='));
+    if (!cookie) return {};
+    try { return JSON.parse(decodeURIComponent(cookie.split('=')[1])); } catch { return {}; }
+  };
+
+  const setLiserClicks = (data) => {
+    document.cookie = `liser_clicks=${encodeURIComponent(JSON.stringify(data))}; max-age=31536000; path=/`;
   };
 
   const handleProductClick = async (baglistId, productId) => {
-    try {
-      await axios.post(`${API}/baglists/${baglistId}/products/${productId}/click`);
-    } catch { /* silencioso, no interrumpir al usuario */ }
+    const clicks = getLiserClicks();
+    const lastClick = clicks[productId];
+    const now = Date.now();
+    const alreadyClicked = lastClick && (now - lastClick) < 24 * 60 * 60 * 1000;
+    if (!alreadyClicked) {
+      try {
+        await api.post(`/baglists/${baglistId}/products/${productId}/click`);
+      } catch { /* silencioso */ }
+      clicks[productId] = now;
+      setLiserClicks(clicks);
+    }
     if (!user) {
       const shown = document.cookie.split(';').some(c => c.trim() === 'liser_capture=1');
       if (!shown) {
@@ -44,20 +70,19 @@ export default function BagListDetailPage() {
   useEffect(() => {
     const fetchBaglist = async () => {
       try {
-        const headers = user ? getAuthHeaders() : {};
-        const res = await axios.get(`${API}/baglists/by-slug/${username}/${slug}`, { headers });
+        const res = await api.get(`/baglists/by-slug/${username}/${slug}`);
         setBaglist(res.data);
       } catch (err) {
         toast.error(err.response?.data?.detail || 'Error al cargar la lista');
       } finally { setLoading(false); }
     };
     fetchBaglist();
-  }, [username, slug, user, getAuthHeaders]);
+  }, [username, slug, user]);
 
   const handleFavorite = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
     try {
-      const res = await axios.post(`${API}/baglists/${baglist.id}/favorite`, {}, { headers: getAuthHeaders() });
+      const res = await api.post(`/baglists/${baglist.id}/favorite`);
       setBaglist(prev => ({ ...prev, is_favorited: res.data.favorited, favorites_count: prev.favorites_count + (res.data.favorited ? 1 : -1) }));
     } catch { toast.error('Error'); }
   };
@@ -65,7 +90,7 @@ export default function BagListDetailPage() {
   const handleSave = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
     try {
-      const res = await axios.post(`${API}/baglists/${baglist.id}/save`, {}, { headers: getAuthHeaders() });
+      const res = await api.post(`/baglists/${baglist.id}/save`);
       setBaglist(prev => ({ ...prev, is_saved: res.data.saved, saves_count: prev.saves_count + (res.data.saved ? 1 : -1) }));
     } catch { toast.error('Error'); }
   };
@@ -108,7 +133,6 @@ export default function BagListDetailPage() {
         open={showCaptureModal}
         onClose={() => setShowCaptureModal(false)}
         baglistId={baglist?.id}
-        API={API}
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="baglist-detail-page">
         <Helmet>

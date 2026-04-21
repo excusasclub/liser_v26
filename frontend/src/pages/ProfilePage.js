@@ -6,13 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Package, Calendar, Layers, Heart, Settings } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
 export default function ProfilePage() {
   const { username } = useParams();
-  const { user, getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [baglists, setBaglists] = useState([]);
@@ -24,8 +24,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const headers = user ? getAuthHeaders() : {};
-        const res = await axios.get(`${API}/users/${username}`, { headers });
+        const res = await api.get(`/users/${username}`);
         setProfile(res.data.user);
         setBaglists(res.data.baglists);
         setFavorites(res.data.favorites || []);
@@ -34,7 +33,7 @@ export default function ProfilePage() {
       finally { setLoading(false); }
     };
     fetchProfile();
-  }, [username, user, getAuthHeaders]);
+  }, [username, user]);
 
   const updateBaglist = (updated) => setBaglists(prev => prev.map(b => b.id === updated.id ? updated : b));
 

@@ -13,14 +13,14 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 } from '@/components/ui/dialog';
 import { Plus, X, Package, GripVertical, Trash2, Save, ArrowLeft, Loader2, Edit, Copy } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { ImageUpload } from '@/components/ImageUpload';
 import { toast } from 'sonner';
 
 export default function CreateBagListPage() {
   const { id } = useParams();
   const isEditing = !!id;
-  const { getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -45,10 +45,10 @@ export default function CreateBagListPage() {
   });
 
   useEffect(() => {
-    axios.get(`${API}/categories`).then(res => setCategories(res.data));
+    api.get('/categories').then(res => setCategories(res.data));
     if (isEditing) {
       setLoading(true);
-      axios.get(`${API}/baglists/${id}`, { headers: getAuthHeaders() })
+      api.get(`/baglists/${id}`)
         .then(res => {
           const b = res.data;
           setForm({ title: b.title, description: b.description, category: b.category, cover_image_url: b.cover_image_url, tags: b.tags || [], is_public: b.is_public });
@@ -64,10 +64,10 @@ export default function CreateBagListPage() {
     setSaving(true);
     try {
       if (isEditing) {
-        await axios.put(`${API}/baglists/${id}`, form, { headers: getAuthHeaders() });
+        await api.put(`/baglists/${id}`, form);
         toast.success('Lista actualizada');
       } else {
-        const res = await axios.post(`${API}/baglists`, form, { headers: getAuthHeaders() });
+        const res = await api.post('/baglists', form);
         toast.success('Lista creada');
         navigate(`/edit/${res.data.id}`);
         return;
@@ -103,11 +103,11 @@ export default function CreateBagListPage() {
     try {
       const payload = { ...productForm, price: productForm.price !== '' ? parseFloat(productForm.price) : null };
       if (editingProduct) {
-        const res = await axios.put(`${API}/baglists/${id}/products/${editingProduct.id}`, payload, { headers: getAuthHeaders() });
+        const res = await api.put(`/baglists/${id}/products/${editingProduct.id}`, payload);
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? res.data : p));
         toast.success('Producto actualizado');
       } else {
-        const res = await axios.post(`${API}/baglists/${id}/products`, payload, { headers: getAuthHeaders() });
+        const res = await api.post(`/baglists/${id}/products`, payload);
         setProducts(prev => [...prev, res.data]);
         toast.success('Producto agregado');
       }
@@ -117,7 +117,7 @@ export default function CreateBagListPage() {
 
   const deleteProduct = async (productId) => {
     try {
-      await axios.delete(`${API}/baglists/${id}/products/${productId}`, { headers: getAuthHeaders() });
+      await api.delete(`/baglists/${id}/products/${productId}`);
       setProducts(prev => prev.filter(p => p.id !== productId));
       toast.success('Producto eliminado');
     } catch { toast.error('Error'); }
@@ -219,7 +219,7 @@ export default function CreateBagListPage() {
                             <Edit className="w-3.5 h-3.5 text-muted-foreground" />
                           </Button>
                           <Button variant="ghost" size="icon" className="w-7 h-7" title="Duplicar en otra BagList"
-                            onClick={() => { setDuplicatingProduct(p); setTargetBaglistId(''); setShowDuplicateDialog(true); axios.get(`${API}/baglists/my`, { headers: getAuthHeaders() }).then(res => setMyBaglists(res.data)); }}>
+                            onClick={() => { setDuplicatingProduct(p); setTargetBaglistId(''); setShowDuplicateDialog(true); api.get('/baglists/my').then(res => setMyBaglists(res.data)); }}>
                             <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                           </Button>
                           <Button variant="ghost" size="icon" className="w-7 h-7" data-testid={`delete-product-${p.id}`}
@@ -298,7 +298,7 @@ export default function CreateBagListPage() {
                 Nuevo producto
               </button>
               <button
-                onClick={() => { setProductDialogTab('copy'); if (myBaglists.length === 0) axios.get(`${API}/baglists/my`, { headers: getAuthHeaders() }).then(res => setMyBaglists(res.data)); }}
+                onClick={() => { setProductDialogTab('copy'); if (myBaglists.length === 0) api.get('/baglists/my').then(res => setMyBaglists(res.data)); }}
                 className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${productDialogTab === 'copy' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                 Copiar existente
               </button>
@@ -322,8 +322,8 @@ export default function CreateBagListPage() {
                     <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg border border-border hover:border-primary/40 cursor-pointer transition-colors"
                       onClick={async () => {
                         try {
-                          await axios.post(`${API}/baglists/${copySourceBaglistId}/products/${p.id}/duplicate`, { target_baglist_id: id }, { headers: getAuthHeaders() });
-                          const res = await axios.get(`${API}/baglists/${id}`, { headers: getAuthHeaders() });
+                          await api.post(`/baglists/${copySourceBaglistId}/products/${p.id}/duplicate`, { target_baglist_id: id });
+                          const res = await api.get(`/baglists/${id}`);
                           setProducts(res.data.products || []);
                           toast.success(`"${p.name}" añadido`);
                           setShowProductDialog(false);
@@ -498,8 +498,7 @@ export default function CreateBagListPage() {
             <Button disabled={!targetBaglistId} className="bg-primary hover:bg-primary/90"
               onClick={async () => {
                 try {
-                  await axios.post(`${API}/baglists/${id}/products/${duplicatingProduct.id}/duplicate`, { target_baglist_id: targetBaglistId }, { headers: getAuthHeaders() });
-                  toast.success('Producto duplicado correctamente');
+                  await api.post(`/baglists/${id}/products/${duplicatingProduct.id}/duplicate`, { target_baglist_id: targetBaglistId });
                   setShowDuplicateDialog(false);
                 } catch { toast.error('Error al duplicar el producto'); }
               }}>

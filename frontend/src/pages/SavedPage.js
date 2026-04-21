@@ -3,11 +3,11 @@ import { useAuth } from '@/context/AuthContext';
 import { BagListCard } from '@/components/BagListCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bookmark, Heart, Loader2, Package } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 
 export default function SavedPage() {
-  const { getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
   const [saved, setSaved] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,10 +15,9 @@ export default function SavedPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const headers = getAuthHeaders();
         const [savedRes, favsRes] = await Promise.all([
-          axios.get(`${API}/users/me/saved`, { headers }),
-          axios.get(`${API}/users/me/favorites`, { headers })
+          api.get('/users/me/saved'),
+          api.get('/users/me/favorites')
         ]);
         setSaved(savedRes.data);
         setFavorites(favsRes.data);

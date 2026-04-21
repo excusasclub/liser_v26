@@ -2,11 +2,10 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2, X } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 
 export function ImageUpload({ value, onChange, placeholder = "Subir imagen", className = "" }) {
-    const { getAuthHeaders, API } = useAuth();
     const [uploading, setUploading] = useState(false);
     const inputRef = useRef(null);
 
@@ -25,8 +24,8 @@ export function ImageUpload({ value, onChange, placeholder = "Subir imagen", cla
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const res = await axios.post(`${API}/upload/image`, formData, {
-                headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' }
+            const res = await api.post('/upload/image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
             onChange(res.data.url);
             toast.success('Imagen subida correctamente');

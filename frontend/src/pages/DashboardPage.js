@@ -6,21 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Layers, Heart, Bookmark, Package, Trash2, Edit, Eye, EyeOff, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 } from '@/components/ui/dialog';
 
 export default function DashboardPage() {
-  const { user, getAuthHeaders, API } = useAuth();
+  const { user } = useAuth();
   const [baglists, setBaglists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
 
   const fetchMyBaglists = async () => {
     try {
-      const res = await axios.get(`${API}/baglists/my`, { headers: getAuthHeaders() });
+      const res = await api.get('/baglists/my');
       setBaglists(res.data);
     } catch { toast.error('Error al cargar listas'); }
     finally { setLoading(false); }
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await axios.delete(`${API}/baglists/${deleteId}`, { headers: getAuthHeaders() });
+      await api.delete(`/baglists/${deleteId}`);
       setBaglists(prev => prev.filter(b => b.id !== deleteId));
       toast.success('Lista eliminada');
     } catch { toast.error('Error al eliminar'); }
@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
   const toggleVisibility = async (baglist) => {
     try {
-      const res = await axios.put(`${API}/baglists/${baglist.id}`, { is_public: !baglist.is_public }, { headers: getAuthHeaders() });
+      const res = await api.put(`/baglists/${baglist.id}`, { is_public: !baglist.is_public });
       setBaglists(prev => prev.map(b => b.id === baglist.id ? res.data : b));
       toast.success(res.data.is_public ? 'Lista publica' : 'Lista privada');
     } catch { toast.error('Error'); }

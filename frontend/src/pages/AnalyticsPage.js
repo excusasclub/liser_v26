@@ -3,42 +3,96 @@ import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart2, MousePointerClick, Package, ChevronDown, ChevronUp, Heart, Bookmark, Bell, Copy } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
-const MONTH_NAMES = { '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr', '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic' };
+const MONTH_NAMES_FULL = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-function MonthlyChart({ data }) {
-    if (!data || data.length === 0) return <p className="text-sm text-muted-foreground text-center py-4">Sin datos mensuales aún.</p>;
-    const max = Math.max(...data.map(d => d.clicks), 1);
+function HeatmapCalendar({ baglistId, staticData }) {
+    const now = new Date();
+    const [year, setYear] = useState(now.getFullYear());
+    const [month, setMonth] = useState(now.getMonth());
+    const [dayClicks, setDayClicks] = useState({});
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (staticData) {
+            const map = {};
+            staticData.forEach(c => { map[c.date] = c.clicks; });
+            setDayClicks(map);
+            return;
+        }
+        if (!baglistId) return;
+        setLoading(true);
+        api.get(`/baglists/${baglistId}/analytics`)
+            .then(res => {
+                const clicks = res.data.daily_clicks || [];
+                const map = {};
+                clicks.forEach(c => { map[c.date] = c.clicks; });
+                setDayClicks(map);
+            })
+            .finally(() => setLoading(false));
+    }, [baglistId, year, month, staticData]);
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const adjustedFirst = (firstDay + 6) % 7;
+    const maxClicks = Math.max(...Object.values(dayClicks), 1);
+
+    const getColor = (clicks) => {
+        if (!clicks) return 'bg-muted';
+        const intensity = clicks / maxClicks;
+        if (intensity < 0.25) return 'bg-primary/20';
+        if (intensity < 0.5) return 'bg-primary/40';
+        if (intensity < 0.75) return 'bg-primary/70';
+        return 'bg-primary';
+    };
+
+    const cells = [];
+    for (let i = 0; i < adjustedFirst; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
     return (
-        <div className="flex items-end gap-2 h-24 mt-2">
-            {data.map(d => {
-                const [year, month] = d.month.split('-');
-                return (
-                    <div key={d.month} className="flex flex-col items-center gap-1 flex-1">
-                        <span className="text-xs text-muted-foreground">{d.clicks}</span>
-                        <div className="w-full bg-primary/20 rounded-t" style={{ height: `${Math.max((d.clicks / max) * 64, 4)}px` }}>
-                            <div className="w-full h-full bg-primary rounded-t opacity-80" />
-                        </div>
-                        <span className="text-xs text-muted-foreground">{MONTH_NAMES[month]}</span>
-                    </div>
-                );
-            })}
+        <div className="mt-2">
+            <div className="flex items-center gap-2 mb-3">
+                <select value={month} onChange={e => setMonth(Number(e.target.value))}
+                    className="h-8 rounded-md border border-input bg-card px-2 text-sm text-foreground">
+                    {MONTH_NAMES_FULL.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                </select>
+                <select value={year} onChange={e => setYear(Number(e.target.value))}
+                    className="h-8 rounded-md border border-input bg-card px-2 text-sm text-foreground">
+                    {[now.getFullYear() - 1, now.getFullYear()].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+                {loading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+            </div>
+            <div className="grid grid-cols-7 gap-1 max-w-[220px]">
+                {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
+                    <div key={d} className="text-xs text-muted-foreground text-center pb-1">{d}</div>
+                ))}
+                {cells.map((d, i) => {
+                    const dateStr = d ? `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
+                    const clicks = dateStr ? (dayClicks[dateStr] || 0) : 0;
+                    return (
+                        <div key={i}
+                            title={d ? `${String(d).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year} — ${clicks} clics` : ''}
+                            className={`w-full aspect-square rounded-sm ${d ? getColor(clicks) : 'bg-transparent'}`}
+                        />
+                    );
+                })}
+            </div>
         </div>
     );
 }
 
 export default function AnalyticsPage() {
-    const { getAuthHeaders, API } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState(null);
     const [baglistDetail, setBaglistDetail] = useState({});
 
     useEffect(() => {
-        axios.get(`${API}/users/me/analytics`, { headers: getAuthHeaders() })
+        api.get('/users/me/analytics')
             .then(res => setData(res.data))
             .catch(() => toast.error('Error al cargar analíticas'))
             .finally(() => setLoading(false));
@@ -49,7 +103,7 @@ export default function AnalyticsPage() {
         setExpanded(baglistId);
         if (!baglistDetail[baglistId]) {
             try {
-                const res = await axios.get(`${API}/baglists/${baglistId}/analytics`, { headers: getAuthHeaders() });
+                const res = await api.get(`/baglists/${baglistId}/analytics`);
                 setBaglistDetail(prev => ({ ...prev, [baglistId]: res.data }));
             } catch { toast.error('Error al cargar detalle'); }
         }
@@ -77,7 +131,7 @@ export default function AnalyticsPage() {
                             <p className="text-sm text-muted-foreground">Clics totales en enlaces de afiliado</p>
                         </div>
                     </div>
-                    <MonthlyChart data={data?.monthly_clicks} />
+                    <HeatmapCalendar staticData={data?.daily_clicks} />
                 </CardContent>
             </Card>
 
@@ -118,7 +172,7 @@ export default function AnalyticsPage() {
                                         <Copy className="w-4 h-4 text-green-400" /> {baglistDetail[b.id].total_discount_clicks} copias de código
                                     </div>
                                 </div>
-                                <MonthlyChart data={baglistDetail[b.id].monthly_clicks} />
+                                <HeatmapCalendar baglistId={b.id} />
                                 <div className="flex flex-col gap-2 mt-4">
                                     {baglistDetail[b.id].products.map((p, idx) => (
                                         <div key={p.id} className="flex items-center gap-3">

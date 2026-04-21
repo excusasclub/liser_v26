@@ -65,6 +65,16 @@ class UserOut(BaseModel):
     avatar_url: str
     created_at: str
 
+class UserUpdate(BaseModel):
+    display_name: Optional[str] = Field(default=None, max_length=50)
+    bio: Optional[str] = Field(default=None, max_length=500)
+    avatar_url: Optional[str] = Field(default=None, max_length=500)
+
+class DuplicateProductRequest(BaseModel):
+    target_baglist_id: str = Field(min_length=1, max_length=100)
+
+
+
 class CustomField(BaseModel):
     key: str = Field(min_length=1, max_length=50)
     value: str = Field(min_length=1, max_length=200)
@@ -274,7 +284,7 @@ async def get_me(user=Depends(get_required_user)):
     }
 
 @api_router.put("/auth/me")
-async def update_me(data: dict, user=Depends(get_required_user)):
+async def update_me(data: UserUpdate, user=Depends(get_required_user)):
     allowed = {"display_name", "bio", "avatar_url"}
     update_data = {k: v for k, v in data.items() if k in allowed}
     if update_data:
@@ -519,7 +529,7 @@ async def update_product(baglist_id: str, product_id: str, data: ProductCreate, 
     return products[i]
 
 @api_router.post("/baglists/{baglist_id}/products/{product_id}/duplicate")
-async def duplicate_product(baglist_id: str, product_id: str, data: dict, user=Depends(get_required_user)):
+async def duplicate_product(baglist_id: str, product_id: str, data: DuplicateProductRequest, user=Depends(get_required_user)):
     target_baglist_id = data.get("target_baglist_id")
     if not target_baglist_id:
         raise HTTPException(status_code=400, detail="target_baglist_id requerido")
@@ -654,9 +664,9 @@ async def get_sitemap():
     baglists = await db.baglists.find(
         {"is_public": True, "slug": {"$exists": True}},
         {"_id": 0, "slug": 1, "username": 1, "updated_at": 1}
-    ).to_list(10000)
+    ).to_list(5000)
     
-    users = await db.users.find({}, {"_id": 0, "username": 1}).to_list(10000)
+    users = await db.users.find({}, {"_id": 0, "username": 1}).to_list(1000)
     
     return {
         "baglists": [{"url": f"/list/{b.get('username', '')}/{b['slug']}", "updated_at": b.get("updated_at", "")} for b in baglists if b.get("slug") and b.get("username")],
@@ -689,7 +699,8 @@ async def upload_image_file(file: UploadFile = File(...), user=Depends(get_requi
         raise HTTPException(status_code=500, detail=f"Error al subir imagen: {str(e)}")
 
 @api_router.post("/baglists/{baglist_id}/products/{product_id}/click")
-async def register_click(baglist_id: str, product_id: str):
+@limiter.limit("30/minute")
+async def register_click(request: Request, baglist_id: str, product_id: str):
     await db.clicks.insert_one({
         "id": str(uuid.uuid4()),
         "baglist_id": baglist_id,
@@ -708,7 +719,8 @@ async def register_click(baglist_id: str, product_id: str):
     return {"ok": True}
 
 @api_router.post("/baglists/{baglist_id}/products/{product_id}/discount-click")
-async def register_discount_click(baglist_id: str, product_id: str):
+@limiter.limit("30/minute")
+async def register_discount_click(request: Request, baglist_id: str, product_id: str):
     await db.clicks.insert_one({
         "id": str(uuid.uuid4()),
         "baglist_id": baglist_id,
@@ -748,12 +760,15 @@ async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)
     for c in discount_clicks:
         pid = c["product_id"]
         product_discount[pid] = product_discount.get(pid, 0) + 1
-    # Clics por mes
     monthly = {}
+    daily = {}
     for c in affiliate_clicks:
         month = c["created_at"][:7]
         monthly[month] = monthly.get(month, 0) + 1
+        day = c["created_at"][:10]
+        daily[day] = daily.get(day, 0) + 1
     monthly_sorted = [{"month": k, "clicks": v} for k, v in sorted(monthly.items())]
+    daily_sorted = [{"date": k, "clicks": v} for k, v in sorted(daily.items())]
     products = baglist.get("products", [])
     product_stats = sorted([
         {
@@ -775,6 +790,7 @@ async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)
         "saves_count": baglist.get("saves_count", 0),
         "followers": followers,
         "monthly_clicks": monthly_sorted,
+        "daily_clicks": daily_sorted,
         "products": product_stats
     }
 
@@ -785,12 +801,16 @@ async def get_user_analytics(user=Depends(get_required_user)):
     clicks = await db.clicks.find({"baglist_id": {"$in": baglist_ids}, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}, {"_id": 0}).to_list(100000)
     baglist_clicks = {}
     monthly = {}
+    daily = {}
     for c in clicks:
         bid = c["baglist_id"]
         baglist_clicks[bid] = baglist_clicks.get(bid, 0) + 1
         month = c["created_at"][:7]
         monthly[month] = monthly.get(month, 0) + 1
+        day = c["created_at"][:10]
+        daily[day] = daily.get(day, 0) + 1
     monthly_sorted = [{"month": k, "clicks": v} for k, v in sorted(monthly.items())]
+    daily_sorted = [{"date": k, "clicks": v} for k, v in sorted(daily.items())]
     baglist_stats = sorted([
         {"id": b["id"], "title": b["title"], "clicks": baglist_clicks.get(b["id"], 0)}
         for b in baglists
@@ -798,6 +818,7 @@ async def get_user_analytics(user=Depends(get_required_user)):
     return {
         "total_clicks": len(clicks),
         "monthly_clicks": monthly_sorted,
+        "daily_clicks": daily_sorted,
         "baglists": baglist_stats
     }
 

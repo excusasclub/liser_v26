@@ -8,11 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ImageUpload';
-import axios from 'axios';
+import api from '../lib/api';
 import { toast } from 'sonner';
 
 export default function EditProfilePage() {
-    const { user, getAuthHeaders, API, setUser } = useAuth();
+    const { user, setUser } = useAuth();
     const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState({
@@ -25,7 +25,7 @@ export default function EditProfilePage() {
         if (!form.display_name.trim()) { toast.error('El nombre es obligatorio'); return; }
         setSaving(true);
         try {
-            const res = await axios.put(`${API}/auth/me`, form, { headers: getAuthHeaders() });
+            const res = await api.put('/auth/me', form);
             setUser(res.data);
             toast.success('Perfil actualizado');
             navigate(`/user/${user.username}`);

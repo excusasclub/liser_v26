@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Bell } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
+import api from '../lib/api';
 
-export default function FollowerCaptureModal({ open, onClose, baglistId, API }) {
+export default function FollowerCaptureModal({ open, onClose, baglistId }) {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
@@ -15,7 +15,7 @@ export default function FollowerCaptureModal({ open, onClose, baglistId, API }) 
         if (!email || !email.includes('@')) { toast.error('Introduce un email válido'); return; }
         setLoading(true);
         try {
-            await axios.post(`${API}/baglists/${baglistId}/follow`, { email });
+            await api.post(`/baglists/${baglistId}/follow`, { email });
             setDone(true);
         } catch {
             toast.error('Error al suscribirse. Inténtalo de nuevo.');
