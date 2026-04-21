@@ -22,6 +22,18 @@ function ProtectedRoute({ children }) {
   return user ? children : <Navigate to="/auth" />;
 }
 
+const PLAN_HIERARCHY = ['free', 'pro', 'premium'];
+
+function PlanRoute({ minPlan, children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/auth" />;
+  const userLevel = PLAN_HIERARCHY.indexOf(user.plan || 'free');
+  const requiredLevel = PLAN_HIERARCHY.indexOf(minPlan);
+  if (userLevel < requiredLevel) return <Navigate to="/dashboard" />;
+  return children;
+}
+
 function AppContent() {
   const { user, loading, theme } = useAuth();
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
@@ -39,7 +51,7 @@ function AppContent() {
         <Route path="/edit/:id" element={<ProtectedRoute><CreateBagListPage /></ProtectedRoute>} />
         <Route path="/saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
         <Route path="/settings/profile" element={<EditProfilePage />} />
-        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+        <Route path="/analytics" element={<PlanRoute minPlan="free"><AnalyticsPage /></PlanRoute>} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

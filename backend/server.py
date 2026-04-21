@@ -69,6 +69,35 @@ class UserUpdate(BaseModel):
     display_name: Optional[str] = Field(default=None, max_length=50)
     bio: Optional[str] = Field(default=None, max_length=500)
     avatar_url: Optional[str] = Field(default=None, max_length=500)
+PLAN_LIMITS = {
+    "free": {
+        "max_baglists": 10,
+        "max_products_per_list": 30,
+        "analytics": True,
+        "custom_fields": True,
+        "social_links": True,
+        "private_lists": True,
+        "max_image_size_mb": 5,
+    },
+    "pro": {
+        "max_baglists": 100,
+        "max_products_per_list": 200,
+        "analytics": True,
+        "custom_fields": True,
+        "social_links": True,
+        "private_lists": True,
+        "max_image_size_mb": 10,
+    },
+    "premium": {
+        "max_baglists": -1,
+        "max_products_per_list": -1,
+        "analytics": True,
+        "custom_fields": True,
+        "social_links": True,
+        "private_lists": True,
+        "max_image_size_mb": 20,
+    },
+}
 
 class DuplicateProductRequest(BaseModel):
     target_baglist_id: str = Field(min_length=1, max_length=100)
@@ -213,6 +242,34 @@ async def get_required_user(authorization: str = Header(...)):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+async def get_required_admin(authorization: str = Header(...)):
+    user = await get_current_user(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso restringido a administradores")
+    return user
+
+async def get_user_with_plan(authorization: str = Header(...)):
+    user = await get_current_user(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    plan = user.get("plan", "free")
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+    return {**user, "plan": plan, "limits": limits}
+
+def require_feature(feature: str):
+    async def _check(authorization: str = Header(...)):
+        user = await get_current_user(authorization)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        plan = user.get("plan", "free")
+        limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+        if not limits.get(feature, False):
+            raise HTTPException(status_code=403, detail=f"Tu plan '{plan}' no incluye esta función. Mejora tu plan.")
+        return {**user, "plan": plan, "limits": limits}
+    return _check
+
 # ── Auth Routes ──
 
 @api_router.post("/auth/register")
@@ -233,6 +290,10 @@ async def register(request: Request, data: UserRegister):
         "display_name": data.display_name or data.username,
         "bio": "",
         "avatar_url": "",
+        "role": "user",
+        "plan": "free",
+        "suspended": False,
+        "last_login": None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
@@ -257,6 +318,7 @@ async def login(request: Request, data: UserLogin):
     if not user or not verify_password(data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    await db.users.update_one({"id": user["id"]}, {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}})
     token = create_token(user["id"])
     return {
         "token": token,
@@ -267,6 +329,8 @@ async def login(request: Request, data: UserLogin):
             "display_name": user["display_name"],
             "bio": user.get("bio", ""),
             "avatar_url": user.get("avatar_url", ""),
+            "role": user.get("role", "user"),
+            "plan": user.get("plan", "free"),
             "created_at": user["created_at"]
         }
     }
@@ -280,13 +344,14 @@ async def get_me(user=Depends(get_required_user)):
         "display_name": user["display_name"],
         "bio": user.get("bio", ""),
         "avatar_url": user.get("avatar_url", ""),
+        "role": user.get("role", "user"),
+        "plan": user.get("plan", "free"),
         "created_at": user["created_at"]
     }
 
 @api_router.put("/auth/me")
 async def update_me(data: UserUpdate, user=Depends(get_required_user)):
-    allowed = {"display_name", "bio", "avatar_url"}
-    update_data = {k: v for k, v in data.items() if k in allowed}
+    update_data = {k: v for k, v in data.model_dump(exclude_none=True).items()}
     if update_data:
         await db.users.update_one({"id": user["id"]}, {"$set": update_data})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})

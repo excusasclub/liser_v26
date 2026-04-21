@@ -49,6 +49,25 @@ async def migrate():
             updated += 1
 
     print(f"Migración completada. Listas actualizadas: {updated}")
+
+    # Migración de usuarios: añadir campos de plan y rol
+    users = await db.users.find({}).to_list(length=None)
+    users_updated = 0
+    for user in users:
+        fields = {}
+        if "role" not in user:
+            fields["role"] = "user"
+        if "plan" not in user:
+            fields["plan"] = "free"
+        if "suspended" not in user:
+            fields["suspended"] = False
+        if "last_login" not in user:
+            fields["last_login"] = None
+        if fields:
+            await db.users.update_one({"_id": user["_id"]}, {"$set": fields})
+            users_updated += 1
+
+    print(f"Usuarios migrados: {users_updated}")
     client.close()
 
 if __name__ == "__main__":
