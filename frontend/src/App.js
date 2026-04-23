@@ -14,7 +14,14 @@ import ProfilePage from "@/pages/ProfilePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import EditProfilePage from '@/pages/EditProfilePage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
+import AdminPage from '@/pages/AdminPage';
 
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user || user.role !== 'admin') return <Navigate to="/dashboard" />;
+  return children;
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -52,7 +59,7 @@ function AppContent() {
         <Route path="/saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
         <Route path="/settings/profile" element={<EditProfilePage />} />
         <Route path="/analytics" element={<PlanRoute minPlan="free"><AnalyticsPage /></PlanRoute>} />
-
+        <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster theme={theme === 'light' ? 'light' : 'dark'} position="bottom-right" />
