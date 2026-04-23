@@ -81,3 +81,9 @@ android-sdk/
 # Env files
 .env
 *.env
+
+backend/.env
+backend/venv/
+frontend/node_modules/
+frontend/build/
+**/__pycache__/
