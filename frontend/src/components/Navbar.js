@@ -7,7 +7,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Plus, Compass, Bookmark, LayoutDashboard, LogOut, User, Settings, Sun, Moon, BarChart2 } from 'lucide-react';
+import { Plus, Compass, Bookmark, LayoutDashboard, LogOut, User, Settings, Sun, Moon, BarChart2, ShieldAlert } from 'lucide-react';
 
 export function Navbar() {
   const { user, logout, theme, toggleTheme } = useAuth();
@@ -51,6 +51,13 @@ export function Navbar() {
                         <BarChart2 className="w-4 h-4" /> Analíticas
                       </Button>
                     </Link>
+                    {user.role === 'admin' && (
+                      <Link to="/admin">
+                        <Button variant={isActive('/admin') ? 'secondary' : 'ghost'} size="sm" className="gap-2">
+                          <ShieldAlert className="w-4 h-4" /> Admin
+                        </Button>
+                      </Link>
+                    )}
                   </>
                 )}
               </div>
