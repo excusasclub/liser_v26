@@ -285,7 +285,7 @@ export default function CreateBagListPage() {
 
       {/* Product Dialog */}
       <Dialog open={showProductDialog} onOpenChange={(open) => { setShowProductDialog(open); if (!open) { setProductDialogTab('new'); setCopySourceBaglistId(''); setCopySourceProducts([]); } }}>
-        <DialogContent className="bg-card border-border max-w-md">
+        <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-['Outfit']">{editingProduct ? 'Editar Producto' : 'Agregar Producto'}</DialogTitle>
             <DialogDescription>Completa la información del producto</DialogDescription>
