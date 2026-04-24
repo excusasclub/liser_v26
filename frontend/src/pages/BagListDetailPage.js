@@ -90,6 +90,7 @@ export default function BagListDetailPage() {
 
   const handleSave = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
+    if (isOwner) { toast.error('No puedes guardar tu propia lista'); return; }
     try {
       const res = await api.post(`/baglists/${baglist.id}/save`);
       setBaglist(prev => ({ ...prev, is_saved: res.data.saved, saves_count: prev.saves_count + (res.data.saved ? 1 : -1) }));
