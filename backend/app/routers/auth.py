@@ -10,6 +10,8 @@ import uuid
 from fastapi.responses import RedirectResponse
 import httpx
 import os
+import secrets
+from app.services.resend_service import send_welcome, send_reset_password
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/auth")
@@ -39,6 +41,10 @@ async def register(request: Request, data: UserRegister):
     }
     await db.users.insert_one(user_doc)
     token = create_token(user_id)
+    try:
+        await send_welcome(data.email, data.username)
+    except Exception:
+        pass
     return {
         "token": token,
         "user": {
@@ -178,3 +184,38 @@ async def google_callback(code: str):
         token = create_token(user_id)
 
     return RedirectResponse(f"{FRONTEND_URL}/auth/google?token={token}")
+
+@router.post("/forgot-password")
+async def forgot_password(body: dict):
+    email = body.get("email", "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email requerido")
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        return {"ok": True}
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc).timestamp() + 3600)
+    await db.users.update_one({"email": email}, {"$set": {"reset_token": reset_token, "reset_token_expires": expires_at}})
+    await send_reset_password(email, user["username"], reset_token)
+    return {"ok": True}
+
+
+@router.post("/reset-password")
+async def reset_password(body: dict):
+    token = body.get("token", "")
+    new_password = body.get("password", "")
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Datos incompletos")
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Mínimo 6 caracteres")
+    user = await db.users.find_one({"reset_token": token}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=400, detail="Token inválido")
+    if datetime.now(timezone.utc).timestamp() > user.get("reset_token_expires", 0):
+        raise HTTPException(status_code=400, detail="Token expirado")
+    from app.services.auth_service import hash_password
+    await db.users.update_one({"reset_token": token}, {
+        "$set": {"password_hash": hash_password(new_password)},
+        "$unset": {"reset_token": "", "reset_token_expires": ""}
+    })
+    return {"ok": True}

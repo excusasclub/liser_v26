@@ -87,6 +87,11 @@ export default function AuthPage() {
                 <Button type="submit" data-testid="login-submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 neon-glow">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Iniciar Sesión'}
                 </Button>
+                <div className="text-center">
+                  <a href="/reset-password" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
               </form>
             </TabsContent>
             <TabsContent value="register">

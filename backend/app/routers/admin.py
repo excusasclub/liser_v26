@@ -187,7 +187,67 @@ async def admin_billing_export(admin=Depends(get_required_admin)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=facturacion.csv"}
     )
+# ── EMAILS ───────────────────────────────────────────────────────────────────
 
+@router.get("/emails")
+async def admin_emails(
+    type: Optional[str] = None,
+    status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    admin=Depends(get_required_admin)
+):
+    query = {}
+    if type:
+        query["type"] = type
+    if status:
+        query["status"] = status
+    skip = (page - 1) * limit
+    emails = await db.email_logs.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.email_logs.count_documents(query)
+    return {"emails": emails, "total": total, "page": page, "pages": -(-total // limit)}
+
+
+@router.post("/emails/resend-welcome/{user_id}")
+async def admin_resend_welcome(user_id: str, admin=Depends(get_required_admin)):
+    from app.services.resend_service import send_welcome
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    result = await send_welcome(user["email"], user["username"])
+    return result
+
+
+@router.post("/emails/notify-followers/{baglist_id}")
+async def admin_notify_followers(baglist_id: str, admin=Depends(get_required_admin)):
+    from app.services.resend_service import send_follower_notification
+    baglist = await db.baglists.find_one({"id": baglist_id}, {"_id": 0})
+    if not baglist:
+        raise HTTPException(status_code=404, detail="BagList no encontrada")
+    owner = await db.users.find_one({"id": baglist["user_id"]}, {"_id": 0, "username": 1})
+    followers = await db.followers.find({"baglist_id": baglist_id}, {"_id": 0, "email": 1}).to_list(1000)
+    sent = 0
+    for f in followers:
+        result = await send_follower_notification(f["email"], owner["username"], baglist["title"], baglist.get("slug", baglist_id))
+        if result.get("ok"):
+            sent += 1
+    return {"sent": sent, "total": len(followers)}
+
+
+@router.post("/emails/broadcast")
+async def admin_broadcast(body: dict, admin=Depends(get_required_admin)):
+    from app.services.resend_service import send_email
+    subject = body.get("subject", "").strip()
+    html = body.get("html", "").strip()
+    if not subject or not html:
+        raise HTTPException(status_code=400, detail="Subject y html requeridos")
+    users = await db.users.find({}, {"_id": 0, "email": 1}).to_list(10000)
+    sent = 0
+    for u in users:
+        result = await send_email(u["email"], subject, html, type="broadcast")
+        if result.get("ok"):
+            sent += 1
+    return {"sent": sent, "total": len(users)}
 
 # ── SISTEMA ──────────────────────────────────────────────────────────────────
 

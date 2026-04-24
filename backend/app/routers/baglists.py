@@ -4,6 +4,7 @@ from app.models.baglist import BagListCreate, BagListUpdate
 from app.models.product import ProductCreate, DuplicateProductRequest, FollowerCapture
 from app.database import db
 from app.utils.slugify import slugify, generate_unique_slug
+from app.services.resend_service import send_follower_notification
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from typing import Optional
@@ -147,6 +148,13 @@ async def update_baglist(baglist_id: str, data: BagListUpdate, user=Depends(get_
     updated["display_name"] = user["display_name"]
     updated["is_favorited"] = False
     updated["is_saved"] = False
+    if updated.get("is_public"):
+        try:
+            followers = await db.followers.find({"baglist_id": baglist_id}, {"_id": 0, "email": 1}).to_list(1000)
+            for f in followers:
+                await send_follower_notification(f["email"], user["username"], updated["title"], updated.get("slug", baglist_id))
+        except Exception:
+            pass
     return updated
 
 @router.delete("/{baglist_id}")
