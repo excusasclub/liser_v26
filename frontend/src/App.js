@@ -15,6 +15,8 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import EditProfilePage from '@/pages/EditProfilePage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
 import AdminPage from '@/pages/AdminPage';
+import LegalPage from '@/pages/LegalPage';
+import { Footer } from '@/components/Footer';
 import GoogleCallbackPage from '@/pages/GoogleCallbackPage';
 
 function AdminRoute({ children }) {
@@ -62,8 +64,10 @@ function AppContent() {
         <Route path="/analytics" element={<PlanRoute minPlan="free"><AnalyticsPage /></PlanRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         <Route path="/auth/google" element={<GoogleCallbackPage />} />
+        <Route path="/legal/:page" element={<LegalPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      <Footer />
       <Toaster theme={theme === 'light' ? 'light' : 'dark'} position="bottom-right" />
     </div>
   );
