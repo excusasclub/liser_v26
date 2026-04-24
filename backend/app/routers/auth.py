@@ -7,6 +7,9 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from datetime import datetime, timezone
 import uuid
+from fastapi.responses import RedirectResponse
+import httpx
+import os
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/auth")
@@ -95,3 +98,83 @@ async def update_me(data: UserUpdate, user=Depends(get_required_user)):
         await db.users.update_one({"id": user["id"]}, {"$set": update_data})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
     return updated
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://api.liser.es/api/auth/google/callback")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.liser.es")
+
+@router.get("/google")
+async def google_login():
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "offline",
+    }
+    from urllib.parse import urlencode
+    url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+    return RedirectResponse(url)
+
+@router.get("/google/callback")
+async def google_callback(code: str):
+    async with httpx.AsyncClient() as client:
+        token_res = await client.post("https://oauth2.googleapis.com/token", data={
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": GOOGLE_REDIRECT_URI,
+            "grant_type": "authorization_code",
+        })
+        token_data = token_res.json()
+        access_token = token_data.get("access_token")
+        if not access_token:
+            return RedirectResponse(f"{FRONTEND_URL}/auth?error=google_failed")
+
+        user_res = await client.get("https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"})
+        google_user = user_res.json()
+
+    email = google_user.get("email")
+    name = google_user.get("name", "")
+    avatar = google_user.get("picture", "")
+    google_id = google_user.get("id")
+
+    if not email:
+        return RedirectResponse(f"{FRONTEND_URL}/auth?error=no_email")
+
+    existing = await db.users.find_one({"email": email}, {"_id": 0})
+    if existing:
+        await db.users.update_one({"id": existing["id"]}, {
+            "$set": {"last_login": datetime.now(timezone.utc).isoformat(), "avatar_url": avatar or existing.get("avatar_url", "")}
+        })
+        token = create_token(existing["id"])
+    else:
+        base_username = email.split("@")[0].lower().replace(".", "_")
+        username = base_username
+        counter = 1
+        while await db.users.find_one({"username": username}):
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        user_id = str(uuid.uuid4())
+        user_doc = {
+            "id": user_id,
+            "email": email,
+            "password_hash": "",
+            "username": username,
+            "display_name": name or username,
+            "bio": "",
+            "avatar_url": avatar,
+            "role": "user",
+            "plan": "free",
+            "suspended": False,
+            "google_id": google_id,
+            "last_login": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user_doc)
+        token = create_token(user_id)
+
+    return RedirectResponse(f"{FRONTEND_URL}/auth/google?token={token}")

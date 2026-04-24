@@ -41,7 +41,10 @@ export function AuthProvider({ children }) {
     setUser(res.data.user);
     return res.data;
   };
-
+  const loginWithToken = (token) => {
+    localStorage.setItem('liser_token', token);
+    setToken(token);
+  };
   const logout = () => {
     localStorage.removeItem('liser_token');
     setToken(null);
@@ -49,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, token, loading, login, register, logout, theme, toggleTheme }}>
+    <AuthContext.Provider value={{ user, setUser, token, loading, login, register, logout, loginWithToken, theme, toggleTheme }}>
       {children}
     </AuthContext.Provider>
   );

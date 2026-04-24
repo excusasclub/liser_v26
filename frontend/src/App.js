@@ -15,6 +15,7 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import EditProfilePage from '@/pages/EditProfilePage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
 import AdminPage from '@/pages/AdminPage';
+import GoogleCallbackPage from '@/pages/GoogleCallbackPage';
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
@@ -60,6 +61,7 @@ function AppContent() {
         <Route path="/settings/profile" element={<EditProfilePage />} />
         <Route path="/analytics" element={<PlanRoute minPlan="free"><AnalyticsPage /></PlanRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+        <Route path="/auth/google" element={<GoogleCallbackPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster theme={theme === 'light' ? 'light' : 'dark'} position="bottom-right" />
