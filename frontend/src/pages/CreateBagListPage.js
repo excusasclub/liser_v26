@@ -246,9 +246,11 @@ export default function CreateBagListPage() {
                 onChange={(url) => setForm({ ...form, cover_image_url: url })}
                 placeholder="Subir portada"
               />
-              <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-              <Input data-testid="cover-image-input" placeholder="https://ejemplo.com/imagen.jpg" value={form.cover_image_url}
-                onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} />
+              {!form.cover_image_url && <>
+                <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
+                <Input data-testid="cover-image-input" placeholder="https://ejemplo.com/imagen.jpg" value={form.cover_image_url}
+                  onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} />
+              </>}
               {form.cover_image_url && (
                 <div className="aspect-video rounded-lg overflow-hidden bg-muted">
                   <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
@@ -357,9 +359,11 @@ export default function CreateBagListPage() {
                   onChange={(url) => setProductForm({ ...productForm, image_url: url })}
                   placeholder="Subir imagen"
                 />
-                <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-                <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
-                  onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
+                {!productForm.image_url && <>
+                  <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
+                  <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
+                    onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
+                </>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
