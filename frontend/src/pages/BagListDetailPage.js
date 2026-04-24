@@ -81,6 +81,7 @@ export default function BagListDetailPage() {
 
   const handleFavorite = async () => {
     if (!user) { toast.error('Inicia sesión'); return; }
+    if (isOwner) { toast.error('No puedes dar me gusta a tu propia lista'); return; }
     try {
       const res = await api.post(`/baglists/${baglist.id}/favorite`);
       setBaglist(prev => ({ ...prev, is_favorited: res.data.favorited, favorites_count: prev.favorites_count + (res.data.favorited ? 1 : -1) }));
