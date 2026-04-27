@@ -252,21 +252,6 @@ export default function CreateBagListPage() {
                 onChange={(url) => setForm({ ...form, cover_image_url: url })}
                 placeholder="Subir portada"
               />
-              {!form.cover_image_url && <>
-                <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-                <Input data-testid="cover-image-input" placeholder="https://ejemplo.com/imagen.jpg" value={form.cover_image_url}
-                  onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} />
-              </>}
-              {form.cover_image_url && (
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted relative">
-                  <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover"
-                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                  <div style={{ display: 'none' }} className="absolute inset-0 items-center justify-center bg-destructive/10 text-destructive text-sm flex-col gap-2">
-                    <span>⚠️</span>
-                    <span>Esta URL no permite mostrar la imagen. Usa el botón "Subir portada".</span>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -370,19 +355,6 @@ export default function CreateBagListPage() {
                   onChange={(url) => setProductForm({ ...productForm, image_url: url })}
                   placeholder="Subir imagen"
                 />
-                {!productForm.image_url && <>
-                  <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-                  <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
-                    onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
-                  {productForm.image_url && (
-                    <img src={productForm.image_url} alt="preview" className="w-16 h-16 object-cover rounded hidden"
-                      onLoad={(e) => e.target.classList.remove('hidden')}
-                      onError={(e) => { e.target.classList.add('hidden'); }} />
-                  )}
-                  {productForm.image_url && (
-                    <p className="text-xs text-muted-foreground">Si la imagen no se ve, el sitio externo no permite su uso. Sube la imagen con el botón de arriba.</p>
-                  )}
-                </>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
