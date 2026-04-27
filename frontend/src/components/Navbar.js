@@ -29,7 +29,7 @@ export function Navbar() {
                 <img
                   src="/logo.svg"
                   alt="Liser"
-                  className="h-6 w-auto"
+                  className="h-10 w-auto"
                   style={{ filter: 'var(--logo-filter)' }}
                 />
               </Link>
