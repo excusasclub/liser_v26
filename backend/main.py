@@ -31,6 +31,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(','),
+    allow_origin_regex=r'https?://(.*\.)?liser\.es',
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
