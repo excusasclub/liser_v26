@@ -27,8 +27,8 @@ async def upload_image_file(file: UploadFile = File(...), type: str = "product",
     contents = await file.read()
     try:
         transformations = {
-            "avatar": [{"width": 400, "height": 400, "crop": "fill", "gravity": "face"}, {"quality": "auto"}],
-            "cover": [{"width": 1200, "height": 630, "crop": "fill", "gravity": "auto"}, {"quality": "auto"}],
+            "avatar": [{"width": 400, "height": 400, "crop": "pad", "gravity": "face"}, {"quality": "auto"}],
+            "cover": [{"width": 1200, "height": 630, "crop": "pad", "gravity": "auto"}, {"quality": "auto"}],
             "product": [{"width": 800, "height": 800, "crop": "pad", "background": "auto"}, {"quality": "auto"}],
         }
         result = cloudinary.uploader.upload(

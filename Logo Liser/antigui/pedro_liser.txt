@@ -1,0 +1,14 @@
+pedro_liser
+E$finge13
+   
+
+
+
+
+Agregar feature Post Instagram
+
+    #F4C949 #315C95
+
+
+python manage.py makemigrations core
+python manage.py migrate core
