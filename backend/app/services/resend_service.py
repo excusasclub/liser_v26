@@ -103,5 +103,5 @@ async def send_reset_password(email: str, username: str, token: str):
 
 
 async def send_follower_notification(email: str, username: str, baglist_title: str, baglist_id: str):
-    baglist_url = f"{FRONTEND_URL}/list/{username}/{baglist_id}"
+    baglist_url = f"{FRONTEND_URL}/{username}/{baglist_id}"
     return await send_email(email, f"'{baglist_title}' se ha actualizado", follower_notification_html(username, baglist_title, baglist_url), type="follower_notification")

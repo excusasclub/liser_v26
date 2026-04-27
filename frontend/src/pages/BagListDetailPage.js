@@ -179,16 +179,20 @@ export default function BagListDetailPage() {
             </Link>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Button variant="outline" size="sm" data-testid="detail-favorite-btn"
-              onClick={handleFavorite}
-              className={`gap-2 ${baglist.is_favorited ? 'border-red-500/30 text-red-400' : 'border-border/50'}`}>
-              <Heart className={`w-4 h-4 ${baglist.is_favorited ? 'fill-current' : ''}`} /> {baglist.favorites_count || 0}
-            </Button>
-            <Button variant="outline" size="sm" data-testid="detail-save-btn"
-              onClick={handleSave}
-              className={`gap-2 ${baglist.is_saved ? 'border-primary/30 text-primary' : 'border-border/50'}`}>
-              <Bookmark className={`w-4 h-4 ${baglist.is_saved ? 'fill-current' : ''}`} /> Guardar
-            </Button>
+            {!isOwner && (
+              <Button variant="outline" size="sm" data-testid="detail-favorite-btn"
+                onClick={handleFavorite}
+                className={`gap-2 ${baglist.is_favorited ? 'border-red-500/30 text-red-400' : 'border-border/50'}`}>
+                <Heart className={`w-4 h-4 ${baglist.is_favorited ? 'fill-current' : ''}`} /> {baglist.favorites_count || 0}
+              </Button>
+            )}
+            {!isOwner && (
+              <Button variant="outline" size="sm" data-testid="detail-save-btn"
+                onClick={handleSave}
+                className={`gap-2 ${baglist.is_saved ? 'border-primary/30 text-primary' : 'border-border/50'}`}>
+                <Bookmark className={`w-4 h-4 ${baglist.is_saved ? 'fill-current' : ''}`} /> Guardar
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleShare} data-testid="detail-share-btn" className="gap-2 border-border/50">
               <Share2 className="w-4 h-4" /> Compartir
             </Button>

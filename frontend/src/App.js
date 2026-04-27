@@ -56,7 +56,7 @@ function AppContent() {
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
         <Route path="/explore" element={<ExplorePage />} />
-        <Route path="/list/:username/:slug" element={<BagListDetailPage />} />
+        <Route path="/:username/:slug" element={<BagListDetailPage />} />
         <Route path="/user/:username" element={<ProfilePage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/create" element={<ProtectedRoute><CreateBagListPage /></ProtectedRoute>} />
