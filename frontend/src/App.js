@@ -19,6 +19,7 @@ import LegalPage from '@/pages/LegalPage';
 import { Footer } from '@/components/Footer';
 import GoogleCallbackPage from '@/pages/GoogleCallbackPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
+import ChooseUsernamePage from '@/pages/ChooseUsernamePage';
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
@@ -66,6 +67,7 @@ function AppContent() {
         <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         <Route path="/auth/google" element={<GoogleCallbackPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/choose-username" element={<ChooseUsernamePage />} />
         <Route path="/legal/:page" element={<LegalPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

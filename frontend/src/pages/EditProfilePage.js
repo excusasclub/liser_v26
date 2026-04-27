@@ -54,9 +54,8 @@ export default function EditProfilePage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label>Nombre de usuario</Label>
-                        <Input value={form.username} placeholder="tu_usuario"
-                            onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })} />
-                        <p className="text-xs text-muted-foreground">Solo letras minúsculas, números y guiones bajos.</p>
+                        <Input value={user?.username} disabled className="opacity-50 cursor-not-allowed" />
+                        <p className="text-xs text-muted-foreground">⚠️ El nombre de usuario forma parte de tus URLs públicas y no puede cambiarse.</p>
                     </div>
                     <div className="space-y-2">
                         <Label>Nombre visible *</Label>

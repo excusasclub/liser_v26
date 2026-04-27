@@ -100,10 +100,6 @@ async def get_me(user=Depends(get_required_user)):
 @router.put("/me")
 async def update_me(data: UserUpdate, user=Depends(get_required_user)):
     update_data = {k: v for k, v in data.model_dump(exclude_none=True).items()}
-    if "username" in update_data:
-        existing = await db.users.find_one({"username": update_data["username"], "id": {"$ne": user["id"]}})
-        if existing:
-            raise HTTPException(status_code=400, detail="Username ya en uso")
     if update_data:
         await db.users.update_one({"id": user["id"]}, {"$set": update_data})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
@@ -187,7 +183,9 @@ async def google_callback(code: str):
         await db.users.insert_one(user_doc)
         token = create_token(user_id)
 
-    return RedirectResponse(f"{FRONTEND_URL}/auth/google?token={token}")
+    if existing:
+        return RedirectResponse(f"{FRONTEND_URL}/auth/google?token={token}")
+    return RedirectResponse(f"{FRONTEND_URL}/choose-username?token={token}")
 
 @router.post("/forgot-password")
 async def forgot_password(body: dict):
