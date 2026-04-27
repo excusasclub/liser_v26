@@ -251,6 +251,7 @@ export default function CreateBagListPage() {
                 value={form.cover_image_url}
                 onChange={(url) => setForm({ ...form, cover_image_url: url })}
                 placeholder="Subir portada"
+                uploadType="cover"
               />
             </CardContent>
           </Card>

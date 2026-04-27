@@ -16,7 +16,7 @@ cloudinary.config(
 router = APIRouter(prefix="/upload")
 
 @router.post("/image")
-async def upload_image_file(file: UploadFile = File(...), user=Depends(get_required_user)):
+async def upload_image_file(file: UploadFile = File(...), type: str = "product", user=Depends(get_required_user)):
     if not file:
         raise HTTPException(status_code=400, detail="No file provided")
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
@@ -26,10 +26,15 @@ async def upload_image_file(file: UploadFile = File(...), user=Depends(get_requi
         raise HTTPException(status_code=400, detail="La imagen no puede superar 5MB")
     contents = await file.read()
     try:
+        transformations = {
+            "avatar": [{"width": 400, "height": 400, "crop": "fill", "gravity": "face"}, {"quality": "auto"}],
+            "cover": [{"width": 1200, "height": 630, "crop": "fill", "gravity": "auto"}, {"quality": "auto"}],
+            "product": [{"width": 800, "height": 800, "crop": "fill", "gravity": "auto"}, {"quality": "auto"}],
+        }
         result = cloudinary.uploader.upload(
             contents,
-            folder="liser",
-            transformation=[{"width": 1200, "crop": "limit"}, {"quality": "auto"}]
+            folder=f"liser/{type}",
+            transformation=transformations.get(type, transformations["product"])
         )
         return {"url": result["secure_url"]}
     except Exception as e:

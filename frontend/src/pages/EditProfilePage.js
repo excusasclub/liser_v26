@@ -73,12 +73,8 @@ export default function EditProfilePage() {
                             value={form.avatar_url}
                             onChange={(url) => setForm({ ...form, avatar_url: url })}
                             placeholder="Subir avatar"
+                            uploadType="avatar"
                         />
-                        {!form.avatar_url && <>
-                            <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-                            <Input value={form.avatar_url} placeholder="https://..."
-                                onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} />
-                        </>}
                     </div>
                 </CardContent>
             </Card>

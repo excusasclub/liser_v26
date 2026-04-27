@@ -5,7 +5,7 @@ import { Upload, Loader2, X } from 'lucide-react';
 import api from '../lib/api';
 import { toast } from 'sonner';
 
-export function ImageUpload({ value, onChange, placeholder = "Subir imagen", className = "" }) {
+export function ImageUpload({ value, onChange, placeholder = "Subir imagen", className = "", uploadType = "product" }) {
     const [uploading, setUploading] = useState(false);
     const inputRef = useRef(null);
 
@@ -24,7 +24,7 @@ export function ImageUpload({ value, onChange, placeholder = "Subir imagen", cla
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const res = await api.post('/upload/image', formData, {
+            const res = await api.post(`/upload/image?type=${uploadType}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             onChange(res.data.url);
