@@ -205,7 +205,13 @@ export default function CreateBagListPage() {
                         className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background hover:border-primary/20 transition-colors">
                         <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
                           {p.image_url ? (
-                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                            <>
+                              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover"
+                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                              <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-destructive/10 text-destructive text-xs text-center p-1 flex-col gap-1">
+                                <span>⚠️</span><span>URL no válida</span>
+                              </div>
+                            </>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>
                           )}
