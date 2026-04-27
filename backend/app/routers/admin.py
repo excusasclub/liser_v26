@@ -40,6 +40,17 @@ async def admin_set_plan(user_id: str, body: dict, admin=Depends(get_required_ad
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return {"ok": True}
 
+@router.delete("/users/{user_id}")
+async def admin_delete_user(user_id: str, admin=Depends(get_required_admin)):
+    await db.baglists.delete_many({"user_id": user_id})
+    await db.favorites.delete_many({"user_id": user_id})
+    await db.saves.delete_many({"user_id": user_id})
+    await db.followers.delete_many({"user_id": user_id})
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return {"ok": True}
+
 
 @router.patch("/users/{user_id}/suspend")
 async def admin_suspend_user(user_id: str, body: dict, admin=Depends(get_required_admin)):

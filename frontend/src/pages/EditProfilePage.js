@@ -12,10 +12,11 @@ import api from '../lib/api';
 import { toast } from 'sonner';
 
 export default function EditProfilePage() {
-    const { user, setUser } = useAuth();
+    const { user, setUser, logout } = useAuth();
     const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState({
+        username: user?.username || '',
         display_name: user?.display_name || '',
         bio: user?.bio || '',
         avatar_url: user?.avatar_url || '',
@@ -53,8 +54,9 @@ export default function EditProfilePage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label>Nombre de usuario</Label>
-                        <Input value={user?.username} disabled className="opacity-50 cursor-not-allowed" />
-                        <p className="text-xs text-muted-foreground">El nombre de usuario no se puede cambiar.</p>
+                        <Input value={form.username} placeholder="tu_usuario"
+                            onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })} />
+                        <p className="text-xs text-muted-foreground">Solo letras minúsculas, números y guiones bajos.</p>
                     </div>
                     <div className="space-y-2">
                         <Label>Nombre visible *</Label>
@@ -73,10 +75,29 @@ export default function EditProfilePage() {
                             onChange={(url) => setForm({ ...form, avatar_url: url })}
                             placeholder="Subir avatar"
                         />
-                        <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
-                        <Input value={form.avatar_url} placeholder="https://..."
-                            onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} />
+                        {!form.avatar_url && <>
+                            <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
+                            <Input value={form.avatar_url} placeholder="https://..."
+                                onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} />
+                        </>}
                     </div>
+                </CardContent>
+            </Card>
+            <Card className="border-border/50 bg-card mt-6 border-destructive/50">
+                <CardHeader><CardTitle className="font-['Outfit'] text-destructive text-base">Zona de peligro</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">Eliminar tu cuenta es permanente. Se borrarán todas tus BagLists, productos e imágenes.</p>
+                    <Button variant="destructive" size="sm" onClick={async () => {
+                        if (!window.confirm('¿Seguro? Esta acción no se puede deshacer.')) return;
+                        try {
+                            await api.delete('/auth/me');
+                            logout();
+                            navigate('/');
+                            toast.success('Cuenta eliminada');
+                        } catch { toast.error('Error al eliminar la cuenta'); }
+                    }}>
+                        Eliminar mi cuenta
+                    </Button>
                 </CardContent>
             </Card>
         </div>

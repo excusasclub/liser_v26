@@ -100,6 +100,10 @@ async def get_me(user=Depends(get_required_user)):
 @router.put("/me")
 async def update_me(data: UserUpdate, user=Depends(get_required_user)):
     update_data = {k: v for k, v in data.model_dump(exclude_none=True).items()}
+    if "username" in update_data:
+        existing = await db.users.find_one({"username": update_data["username"], "id": {"$ne": user["id"]}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Username ya en uso")
     if update_data:
         await db.users.update_one({"id": user["id"]}, {"$set": update_data})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
@@ -218,4 +222,14 @@ async def reset_password(body: dict):
         "$set": {"password_hash": hash_password(new_password)},
         "$unset": {"reset_token": "", "reset_token_expires": ""}
     })
+    return {"ok": True}
+
+@router.delete("/me")
+async def delete_account(user=Depends(get_required_user)):
+    user_id = user["id"]
+    await db.baglists.delete_many({"user_id": user_id})
+    await db.favorites.delete_many({"user_id": user_id})
+    await db.saves.delete_many({"user_id": user_id})
+    await db.followers.delete_many({"user_id": user_id})
+    await db.users.delete_one({"id": user_id})
     return {"ok": True}

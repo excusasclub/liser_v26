@@ -250,6 +250,7 @@ export default function AdminPage() {
                                                     <Button size="sm" variant={u.suspended ? 'default' : 'destructive'} className="h-6 text-xs px-2" onClick={() => setSuspended(u.id, !u.suspended)}>
                                                         {u.suspended ? 'Reactivar' : 'Suspender'}
                                                     </Button>
+                                                    <Button size="sm" variant="destructive" className="h-6 text-xs px-2" onClick={async () => { if (!window.confirm(`¿Eliminar usuario ${u.username}?`)) return; await api.delete(`/admin/users/${u.id}`); loadUsers(); }}>Eliminar</Button>
                                                 </div>
                                             </td>
                                         </tr>
