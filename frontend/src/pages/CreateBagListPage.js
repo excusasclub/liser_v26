@@ -205,7 +205,7 @@ export default function CreateBagListPage() {
                         className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background hover:border-primary/20 transition-colors">
                         <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
                           {p.image_url ? (
-                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>
                           )}
@@ -363,6 +363,14 @@ export default function CreateBagListPage() {
                   <p className="text-xs text-muted-foreground">También puedes pegar una URL directamente:</p>
                   <Input data-testid="product-image-input" value={productForm.image_url} placeholder="https://..."
                     onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
+                  {productForm.image_url && (
+                    <img src={productForm.image_url} alt="preview" className="w-16 h-16 object-cover rounded hidden"
+                      onLoad={(e) => e.target.classList.remove('hidden')}
+                      onError={(e) => { e.target.classList.add('hidden'); }} />
+                  )}
+                  {productForm.image_url && (
+                    <p className="text-xs text-muted-foreground">Si la imagen no se ve, el sitio externo no permite su uso. Sube la imagen con el botón de arriba.</p>
+                  )}
                 </>}
               </div>
               <div className="grid grid-cols-2 gap-3">
