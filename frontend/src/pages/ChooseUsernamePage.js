@@ -23,7 +23,7 @@ export default function ChooseUsernamePage() {
         setLoading(true);
         try {
             loginWithToken(token);
-            await api.put('/auth/me', { username });
+            await api.post('/auth/choose-username', { username });
             navigate('/dashboard');
             toast.success('¡Bienvenido a Liser!');
         } catch (err) {

@@ -231,3 +231,17 @@ async def delete_account(user=Depends(get_required_user)):
     await db.followers.delete_many({"user_id": user_id})
     await db.users.delete_one({"id": user_id})
     return {"ok": True}
+
+@router.post("/choose-username")
+async def choose_username(body: dict, user=Depends(get_required_user)):
+    username = body.get("username", "").strip().lower()
+    if len(username) < 3:
+        raise HTTPException(status_code=400, detail="Mínimo 3 caracteres")
+    import re
+    if not re.match(r'^[a-z0-9_]+$', username):
+        raise HTTPException(status_code=400, detail="Solo letras minúsculas, números y guiones bajos")
+    existing = await db.users.find_one({"username": username, "id": {"$ne": user["id"]}})
+    if existing:
+        raise HTTPException(status_code=400, detail="Username ya en uso")
+    await db.users.update_one({"id": user["id"]}, {"$set": {"username": username}})
+    return {"ok": True}
