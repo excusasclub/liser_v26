@@ -258,8 +258,13 @@ export default function CreateBagListPage() {
                   onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })} />
               </>}
               {form.cover_image_url && (
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                  <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
+                <div className="aspect-video rounded-lg overflow-hidden bg-muted relative">
+                  <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                  <div style={{ display: 'none' }} className="absolute inset-0 items-center justify-center bg-destructive/10 text-destructive text-sm flex-col gap-2">
+                    <span>⚠️</span>
+                    <span>Esta URL no permite mostrar la imagen. Usa el botón "Subir portada".</span>
+                  </div>
                 </div>
               )}
             </CardContent>
