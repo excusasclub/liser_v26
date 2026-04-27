@@ -104,7 +104,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {baglists.map(b => (
             <div key={b.id} className="relative group">
-              <BagListCard baglist={b} onUpdate={(updated) => setBaglists(prev => prev.map(x => x.id === updated.id ? updated : x))} />
+              <Link to={`/edit/${b.id}`} className="block">
+                <BagListCard baglist={b} onUpdate={(updated) => setBaglists(prev => prev.map(x => x.id === updated.id ? updated : x))} />
+              </Link>
               <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <Link to={`/edit/${b.id}`}>
                   <Button variant="ghost" size="icon" data-testid={`edit-btn-${b.id}`}

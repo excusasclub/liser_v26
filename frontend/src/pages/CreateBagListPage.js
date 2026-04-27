@@ -279,6 +279,18 @@ export default function CreateBagListPage() {
               )}
             </CardContent>
           </Card>
+          {isEditing && (
+            <Button variant="destructive" size="sm" className="w-full" onClick={async () => {
+              if (!window.confirm('¿Eliminar esta BagList? Esta acción no se puede deshacer.')) return;
+              try {
+                await api.delete(`/baglists/${id}`);
+                toast.success('BagList eliminada');
+                navigate('/dashboard');
+              } catch { toast.error('Error al eliminar'); }
+            }}>
+              Eliminar BagList
+            </Button>
+          )}
         </div>
       </div>
 
@@ -344,6 +356,18 @@ export default function CreateBagListPage() {
           )}
           {(productDialogTab === 'new' || editingProduct) && (
             <div className="space-y-4 py-2">
+              <div className="flex gap-2">
+                <Button onClick={saveProduct} className="flex-1 bg-primary hover:bg-primary/90">
+                  {editingProduct ? 'Guardar cambios' : 'Agregar producto'}
+                </Button>
+                {editingProduct && (
+                  <Button variant="destructive" onClick={async () => {
+                    if (!window.confirm('¿Eliminar este producto?')) return;
+                    await deleteProduct(editingProduct.id);
+                    setShowProductDialog(false);
+                  }}>Eliminar</Button>
+                )}
+              </div>
               <div className="space-y-2">
                 <Label>Nombre *</Label>
                 <Input data-testid="product-name-input" value={productForm.name} placeholder="Nombre del producto"
