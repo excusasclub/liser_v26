@@ -224,9 +224,9 @@ export default function BagListDetailPage() {
                 <CardContent className="p-0 flex">
                   <a href={product.link} target="_blank" rel="noopener noreferrer"
                     onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}
-                    className="w-32 shrink-0 overflow-hidden bg-muted block">
+                    className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
                     {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                      <img src={product.image_url} alt={product.name} className="w-full h-full object-contain bg-muted" loading="lazy" />
                     ) : (
                       <div className="w-full h-full product-image-placeholder flex items-center justify-center min-h-[8rem]">
                         <Package className="w-8 h-8 text-muted-foreground/30" />
