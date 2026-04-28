@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, Bookmark, ExternalLink, Package, ArrowLeft, Edit, Share2, Loader2, Copy, Check, Instagram, Youtube, Twitch } from 'lucide-react';
+import { Heart, Bookmark, ExternalLink, Package, ArrowLeft, Edit, Share2, Loader2, Copy, Check } from 'lucide-react';
+import { SiInstagram, SiYoutube, SiTiktok, SiX, SiPinterest, SiTwitch } from '@icons-pack/react-simple-icons';
 import api from '../lib/api';
 import FollowerCaptureModal from '@/components/FollowerCaptureModal';
 import { toast } from 'sonner';
@@ -109,12 +110,12 @@ export default function BagListDetailPage() {
   const isOwner = user && user.id === baglist.user_id;
 
   const SOCIAL_CONFIG = {
-    instagram: { label: 'Instagram', color: '#E1306C', icon: Instagram },
-    youtube: { label: 'YouTube', color: '#FF0000', icon: Youtube },
-    tiktok: { label: 'TikTok', color: '#000000', icon: null },
-    twitter: { label: 'Twitter/X', color: '#1DA1F2', icon: null },
-    pinterest: { label: 'Pinterest', color: '#E60023', icon: null },
-    twitch: { label: 'Twitch', color: '#9146FF', icon: Twitch },
+    instagram: { label: 'Instagram', color: '#E1306C', icon: SiInstagram },
+    youtube: { label: 'YouTube', color: '#FF0000', icon: SiYoutube },
+    tiktok: { label: 'TikTok', color: '#000000', icon: SiTiktok },
+    twitter: { label: 'Twitter/X', color: '#000000', icon: SiX },
+    pinterest: { label: 'Pinterest', color: '#E60023', icon: SiPinterest },
+    twitch: { label: 'Twitch', color: '#9146FF', icon: SiTwitch },
   };
 
   const SocialIcon = ({ network, url }) => {
