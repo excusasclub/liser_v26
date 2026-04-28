@@ -71,7 +71,7 @@ export default function DashboardPage() {
           { icon: Heart, label: 'Favoritos', value: totalFavorites, color: 'text-accent' },
           { icon: Bookmark, label: 'Públicas', value: baglists.filter(b => b.is_public).length, color: 'text-blue-400' },
         ].map((s, i) => (
-          <Card key={i} className="border-border/50 bg-card">
+          <div key={i} className="rounded-lg border border-border/50 bg-card">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                 <s.icon className={`w-5 h-5 ${s.color}`} />
@@ -81,7 +81,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">{s.label}</p>
               </div>
             </CardContent>
-          </Card>
+          </div>
         ))}
       </div>
 

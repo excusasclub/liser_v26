@@ -39,7 +39,7 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
       <Card className="group overflow-hidden border-border/50 bg-card hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 h-full">
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
           {coverImage ? (
-            <img src={coverImage} alt={baglist.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+            <img src={coverImage} alt={baglist.title} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" />
           ) : (
             <div className="w-full h-full product-image-placeholder flex items-center justify-center">
               <Package className="w-10 h-10 text-muted-foreground/40" />

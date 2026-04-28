@@ -244,7 +244,7 @@ export default function AdminPage() {
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-1 flex-wrap">
                                                     {['free', 'pro', 'premium'].filter(p => p !== u.plan).map(p => (
-                                                        <Button key={p} size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => setPlan(u.id, p)}>→{p}</Button>
+                                                        <Button key={p} size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => setPlan(u.id, p)}>{p}</Button>
                                                     ))}
                                                     <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => resendWelcome(u.id)}>✉</Button>
                                                     <Button size="sm" variant={u.suspended ? 'default' : 'destructive'} className="h-6 text-xs px-2" onClick={() => setSuspended(u.id, !u.suspended)}>
