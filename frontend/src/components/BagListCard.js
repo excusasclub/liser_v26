@@ -15,6 +15,7 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
     e.preventDefault();
     e.stopPropagation();
     if (!user) { toast.error('Inicia sesion para dar favorito'); return; }
+    if (user.id === baglist.user_id) return;
     try {
       const res = await api.post(`/baglists/${baglist.id}/favorite`);
       if (onUpdate) onUpdate({ ...baglist, is_favorited: res.data.favorited, favorites_count: baglist.favorites_count + (res.data.favorited ? 1 : -1) });
@@ -25,6 +26,7 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
     e.preventDefault();
     e.stopPropagation();
     if (!user) { toast.error('Inicia sesion para guardar'); return; }
+    if (user.id === baglist.user_id) return;
     try {
       const res = await api.post(`/baglists/${baglist.id}/save`);
       if (onUpdate) onUpdate({ ...baglist, is_saved: res.data.saved, saves_count: baglist.saves_count + (res.data.saved ? 1 : -1) });
@@ -45,18 +47,20 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
               <Package className="w-10 h-10 text-muted-foreground/40" />
             </div>
           )}
-          <div className="absolute top-3 right-3 flex gap-1.5">
-            <Button variant="ghost" size="icon" data-testid={`favorite-btn-${baglist.id}`}
-              onClick={handleFavorite}
-              className={`w-8 h-8 rounded-full backdrop-blur-md ${baglist.is_favorited ? 'bg-red-500/20 text-red-400' : 'bg-black/40 text-white/70 hover:text-white'}`}>
-              <Heart className={`w-4 h-4 ${baglist.is_favorited ? 'fill-current' : ''}`} />
-            </Button>
-            <Button variant="ghost" size="icon" data-testid={`save-btn-${baglist.id}`}
-              onClick={handleSave}
-              className={`w-8 h-8 rounded-full backdrop-blur-md ${baglist.is_saved ? 'bg-primary/20 text-primary' : 'bg-black/40 text-white/70 hover:text-white'}`}>
-              <Bookmark className={`w-4 h-4 ${baglist.is_saved ? 'fill-current' : ''}`} />
-            </Button>
-          </div>
+          {(!user || user.id !== baglist.user_id) && (
+            <div className="absolute top-3 right-3 flex gap-1.5">
+              <Button variant="ghost" size="icon" data-testid={`favorite-btn-${baglist.id}`}
+                onClick={handleFavorite}
+                className={`w-8 h-8 rounded-full backdrop-blur-md ${baglist.is_favorited ? 'bg-red-500/20 text-red-400' : 'bg-black/40 text-white/70 hover:text-white'}`}>
+                <Heart className={`w-4 h-4 ${baglist.is_favorited ? 'fill-current' : ''}`} />
+              </Button>
+              <Button variant="ghost" size="icon" data-testid={`save-btn-${baglist.id}`}
+                onClick={handleSave}
+                className={`w-8 h-8 rounded-full backdrop-blur-md ${baglist.is_saved ? 'bg-primary/20 text-primary' : 'bg-black/40 text-white/70 hover:text-white'}`}>
+                <Bookmark className={`w-4 h-4 ${baglist.is_saved ? 'fill-current' : ''}`} />
+              </Button>
+            </div>
+          )}
           {baglist.category && baglist.category !== 'Other' && (
             <Badge className="absolute bottom-3 left-3 bg-primary/80 backdrop-blur-sm text-xs border-0">
               {baglist.category}
