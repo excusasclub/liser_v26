@@ -384,7 +384,7 @@ export default function AdminPage() {
                                             <td className="px-4 py-2 text-muted-foreground">{u.email}</td>
                                             <td className="px-4 py-2"><Badge variant="default">{u.plan}</Badge></td>
                                             <td className="px-4 py-2 text-muted-foreground text-xs">{u.created_at?.slice(0, 10)}</td>
-                                            <td className="px-4 py-2 text-muted-foreground text-xs">{u.last_login?.slice(0, 10) || '—'}</td>
+                                            <td className="px-4 py-2 text-muted-foreground text-xs" title={u.last_login || ''}>{u.last_login?.slice(0, 10) || '—'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
