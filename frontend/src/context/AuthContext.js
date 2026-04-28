@@ -41,9 +41,15 @@ export function AuthProvider({ children }) {
     setUser(res.data.user);
     return res.data;
   };
-  const loginWithToken = (token) => {
+  const loginWithToken = async (token) => {
     localStorage.setItem('liser_token', token);
     setToken(token);
+    try {
+      const res = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(res.data);
+    } catch { }
   };
   const logout = () => {
     localStorage.removeItem('liser_token');

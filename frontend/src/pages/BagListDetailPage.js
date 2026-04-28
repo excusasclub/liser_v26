@@ -48,6 +48,7 @@ export default function BagListDetailPage() {
   };
 
   const handleProductClick = async (baglistId, productId) => {
+    if (user?.id === baglist.user_id) return;
     const clicks = getLiserClicks();
     const lastClick = clicks[productId];
     const now = Date.now();
@@ -226,17 +227,29 @@ export default function BagListDetailPage() {
               <Card key={product.id} data-testid={`product-card-${product.id}`}
                 className="group border-border/50 bg-card hover:border-primary/20 transition-all duration-300 overflow-hidden">
                 <CardContent className="p-0 flex">
-                  <a href={product.link} target="_blank" rel="noopener noreferrer"
-                    onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}
-                    className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-contain bg-muted" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full product-image-placeholder flex items-center justify-center min-h-[8rem]">
-                        <Package className="w-8 h-8 text-muted-foreground/30" />
-                      </div>
-                    )}
-                  </a>
+                  {product.link ? (
+                    <a href={product.link} target="_blank" rel="noopener noreferrer"
+                      onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}
+                      className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-contain bg-muted" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full product-image-placeholder flex items-center justify-center min-h-[8rem]">
+                          <Package className="w-8 h-8 text-muted-foreground/30" />
+                        </div>
+                      )}
+                    </a>
+                  ) : (
+                    <div className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-contain bg-muted" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full product-image-placeholder flex items-center justify-center min-h-[8rem]">
+                          <Package className="w-8 h-8 text-muted-foreground/30" />
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="flex-1 p-4 flex flex-col gap-2 min-w-0">
                     {/* Nombre */}
                     {product.link ? (
