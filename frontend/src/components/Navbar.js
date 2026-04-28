@@ -23,13 +23,10 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
               <Link to="/" data-testid="nav-logo" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center neon-glow">
-                  <span className="text-white font-bold text-sm font-['Outfit']">L</span>
-                </div>
                 <img
                   src="/logo.svg"
                   alt="Liser"
-                  className="h-10 w-auto"
+                  className="h-12 w-auto"
                   style={{ filter: 'var(--logo-filter)' }}
                 />
               </Link>
