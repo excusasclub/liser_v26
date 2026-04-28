@@ -142,14 +142,36 @@ export default function BagListDetailPage() {
         <Helmet>
           <title>{baglist.title} — Liser</title>
           <meta name="description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
+          <meta name="keywords" content={[baglist.category, ...(baglist.tags || []), 'productos recomendados', 'lista de productos', baglist.display_name].filter(Boolean).join(', ')} />
+          <meta name="author" content={baglist.display_name} />
+          <link rel="canonical" href={`https://liser.es/${baglist.username}/${baglist.slug}`} />
           <meta property="og:title" content={`${baglist.title} — Liser`} />
           <meta property="og:description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
           <meta property="og:type" content="website" />
+          <meta property="og:url" content={`https://liser.es/${baglist.username}/${baglist.slug}`} />
           {baglist.cover_image_url && <meta property="og:image" content={baglist.cover_image_url} />}
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content={`${baglist.title} — Liser`} />
           <meta name="twitter:description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
           {baglist.cover_image_url && <meta name="twitter:image" content={baglist.cover_image_url} />}
+          <script type="application/ld+json">{JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": baglist.title,
+            "description": baglist.description || `Lista de productos de ${baglist.display_name}`,
+            "url": `https://liser.es/${baglist.username}/${baglist.slug}`,
+            "author": { "@type": "Person", "name": baglist.display_name },
+            "numberOfItems": baglist.products?.length || 0,
+            "itemListElement": (baglist.products || []).map((p, i) => ({
+              "@type": "ListItem",
+              "position": i + 1,
+              "name": p.name,
+              "description": p.description || undefined,
+              "url": p.link || undefined,
+              "image": p.image_url || undefined,
+              ...(p.price ? { "offers": { "@type": "Offer", "price": p.price, "priceCurrency": p.currency || "EUR" } } : {})
+            }))
+          })}</script>
         </Helmet>
         {/* Back */}
         <Button variant="ghost" size="sm" className="mb-6 gap-2 text-muted-foreground hover:text-foreground" onClick={() => window.history.back()}>
