@@ -10,12 +10,12 @@ class SocialLink(BaseModel):
     url: str = Field(min_length=1, max_length=500)
 
 class ProductCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=200)
+    name: str = Field(min_length=1, max_length=100)
     image_url: Optional[str] = Field(default="", max_length=500)
     price: Optional[float] = Field(default=None, ge=0)
     currency: Optional[str] = "EUR"
     link: Optional[str] = Field(default="", max_length=2000)
-    description: Optional[str] = Field(default="", max_length=1000)
+    description: Optional[str] = Field(default="", max_length=500)
     discount_code: Optional[str] = Field(default="", max_length=50)
     custom_fields: Optional[List[CustomField]] = []
     social_links: Optional[List[SocialLink]] = []

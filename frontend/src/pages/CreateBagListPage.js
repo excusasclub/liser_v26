@@ -402,6 +402,7 @@ export default function CreateBagListPage() {
               <div className="space-y-2">
                 <Label>Nombre *</Label>
                 <Input data-testid="product-name-input" value={productForm.name} placeholder="Nombre del producto"
+                  maxLength={100}
                   onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} />
               </div>
               <div className="space-y-2">
@@ -440,6 +441,7 @@ export default function CreateBagListPage() {
               <div className="space-y-2">
                 <Label>Descripción</Label>
                 <Textarea data-testid="product-description-input" rows={2} value={productForm.description} placeholder="Descripción breve..."
+                  maxLength={500}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} />
               </div>
               <div className="space-y-2">
