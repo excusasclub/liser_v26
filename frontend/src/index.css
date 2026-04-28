@@ -196,8 +196,3 @@
   animation-delay: 0.4s;
   opacity: 0;
 }
-
-[data-admin='true'] {
-  --primary: 142 72% 32%;
-  --primary-foreground: 0 0% 100%;
-}
