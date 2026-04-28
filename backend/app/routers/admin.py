@@ -82,6 +82,11 @@ async def admin_list_baglists(
     skip = (page - 1) * limit
     baglists = await db.baglists.find(query, {"_id": 0, "products": 0}).skip(skip).limit(limit).to_list(limit)
     total = await db.baglists.count_documents(query)
+    user_ids = list(set(b["user_id"] for b in baglists))
+    users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "username": 1}).to_list(100)
+    users_map = {u["id"]: u["username"] for u in users}
+    for b in baglists:
+        b["username"] = users_map.get(b["user_id"], "—")
     return {"baglists": baglists, "total": total, "page": page, "pages": -(-total // limit)}
 
 

@@ -285,7 +285,11 @@ export default function AdminPage() {
                                 <tbody>
                                     {baglists.map(b => (
                                         <tr key={b.id} className="border-t border-border/50 hover:bg-muted/20">
-                                            <td className="px-4 py-2 font-medium max-w-xs truncate">{b.title}</td>
+                                            <td className="px-4 py-2 font-medium max-w-xs truncate">
+                                                {b.is_public
+                                                    ? <a href={`/${b.username}/${b.slug}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">{b.title}</a>
+                                                    : b.title}
+                                            </td>
                                             <td className="px-4 py-2 text-muted-foreground">{b.username}</td>
                                             <td className="px-4 py-2 text-muted-foreground">{b.category}</td>
                                             <td className="px-4 py-2">{b.total_clicks || 0}</td>
