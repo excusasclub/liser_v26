@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +20,7 @@ import { Plus, X, Package, GripVertical, Trash2, Save, ArrowLeft, Loader2, Edit,
 import api from '../lib/api';
 import { ImageUpload } from '@/components/ImageUpload';
 import { toast } from 'sonner';
+
 
 export default function CreateBagListPage() {
   const { id } = useParams();
@@ -115,6 +120,63 @@ export default function CreateBagListPage() {
     } catch { toast.error('Error al guardar producto'); }
   };
 
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = products.findIndex(p => p.id === active.id);
+    const newIndex = products.findIndex(p => p.id === over.id);
+    const reordered = arrayMove(products, oldIndex, newIndex).map((p, i) => ({ ...p, position: i }));
+    setProducts(reordered);
+    try {
+      await api.put(`/baglists/${id}`, { products: reordered });
+    } catch { toast.error('Error al reordenar'); }
+  };
+
+  const SortableProduct = ({ p }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id });
+    const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+    return (
+      <div ref={setNodeRef} style={style} data-testid={`product-item-${p.id}`}
+        className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background hover:border-primary/20 transition-colors">
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing shrink-0 touch-none">
+          <GripVertical className="w-4 h-4 text-muted-foreground/40" />
+        </div>
+        <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
+          {p.image_url ? (
+            <>
+              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover"
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+              <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-destructive/10 text-destructive text-xs text-center p-1 flex-col gap-1">
+                <span>⚠️</span><span>URL no válida</span>
+              </div>
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+          {p.price != null && p.price > 0 && <p className="text-xs text-secondary">{p.currency === 'EUR' ? `${p.price.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : `${p.currency} ${p.price.toFixed(2)}`}</p>}
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openProductDialog(p)}>
+            <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+          </Button>
+          <Button variant="ghost" size="icon" className="w-7 h-7" title="Duplicar en otra BagList"
+            onClick={() => { setDuplicatingProduct(p); setTargetBaglistId(''); setShowDuplicateDialog(true); api.get('/baglists/my').then(res => setMyBaglists(res.data)); }}>
+            <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+          </Button>
+          <Button variant="ghost" size="icon" className="w-7 h-7" data-testid={`delete-product-${p.id}`}
+            onClick={() => deleteProduct(p.id)}>
+            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+
   const deleteProduct = async (productId) => {
     try {
       await api.delete(`/baglists/${id}/products/${productId}`);
@@ -199,43 +261,13 @@ export default function CreateBagListPage() {
                     <p className="text-sm text-muted-foreground">Agrega productos a tu lista</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {products.map((p, i) => (
-                      <div key={p.id} data-testid={`product-item-${p.id}`}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background hover:border-primary/20 transition-colors">
-                        <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
-                          {p.image_url ? (
-                            <>
-                              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover"
-                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                              <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-destructive/10 text-destructive text-xs text-center p-1 flex-col gap-1">
-                                <span>⚠️</span><span>URL no válida</span>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-                          {p.price != null && p.price > 0 && <p className="text-xs text-secondary">{p.currency === 'EUR' ? `${p.price.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : `${p.currency} ${p.price.toFixed(2)}`}</p>}
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openProductDialog(p)}>
-                            <Edit className="w-3.5 h-3.5 text-muted-foreground" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="w-7 h-7" title="Duplicar en otra BagList"
-                            onClick={() => { setDuplicatingProduct(p); setTargetBaglistId(''); setShowDuplicateDialog(true); api.get('/baglists/my').then(res => setMyBaglists(res.data)); }}>
-                            <Copy className="w-3.5 h-3.5 text-muted-foreground" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="w-7 h-7" data-testid={`delete-product-${p.id}`}
-                            onClick={() => deleteProduct(p.id)}>
-                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                          </Button>
-                        </div>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={products.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-3">
+                        {products.map(p => <SortableProduct key={p.id} p={p} />)}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                 )}
               </CardContent>
             </Card>

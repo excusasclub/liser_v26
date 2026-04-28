@@ -18,6 +18,7 @@ class BagListUpdate(BaseModel):
     cover_image_url: Optional[str] = Field(default=None, max_length=500)
     tags: Optional[List[str]] = None
     is_public: Optional[bool] = None
+    products: Optional[List[dict]] = None
 
 class BagListOut(BaseModel):
     id: str
