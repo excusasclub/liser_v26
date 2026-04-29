@@ -13,6 +13,10 @@ import FollowerCaptureModal from '@/components/FollowerCaptureModal';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
+const cloudinaryAuto = (url) => {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  return url.replace('/upload/', '/upload/f_auto,q_auto/');
+};
 export default function BagListDetailPage() {
   const { username, slug } = useParams();
   const { user } = useAuth();
@@ -149,7 +153,7 @@ export default function BagListDetailPage() {
           <meta property="og:description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
           <meta property="og:type" content="website" />
           <meta property="og:url" content={`https://liser.es/${baglist.username}/${baglist.slug}`} />
-          {baglist.cover_image_url && <meta property="og:image" content={baglist.cover_image_url} />}
+          {baglist.cover_image_url && <meta property="og:image" content={cloudinaryAuto(baglist.cover_image_url)} />}
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content={`${baglist.title} — Liser`} />
           <meta name="twitter:description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
@@ -255,7 +259,7 @@ export default function BagListDetailPage() {
                       onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}
                       className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
                       {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-contain bg-muted" loading="lazy" />
+                        <img src={cloudinaryAuto(product.image_url)} alt={product.name} width="800" height="800" className="w-full h-full object-contain bg-muted" loading="lazy" />
                       ) : (
                         <div className="w-full h-full product-image-placeholder flex items-center justify-center min-h-[8rem]">
                           <Package className="w-8 h-8 text-muted-foreground/30" />
@@ -265,7 +269,7 @@ export default function BagListDetailPage() {
                   ) : (
                     <div className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
                       {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-contain bg-muted" loading="lazy" />
+                        <img src={cloudinaryAuto(product.image_url)} alt={product.name} width="800" height="800" className="w-full h-full object-contain bg-muted" loading="lazy" />
                       ) : (
                         <div className="w-full h-full product-image-placeholder flex items-center justify-center min-h-[8rem]">
                           <Package className="w-8 h-8 text-muted-foreground/30" />
