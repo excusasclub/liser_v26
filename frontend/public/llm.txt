@@ -1,0 +1,27 @@
+# Liser
+
+> Liser es una plataforma web donde creadores de contenido crean y comparten listas de productos recomendados llamadas BagLists, con enlaces de afiliado y URLs permanentes optimizadas para SEO.
+
+## Qué es una BagList
+
+Una BagList es una lista curada de productos recomendados creada por un usuario. Cada producto puede incluir nombre, imagen, precio, enlace de afiliado, código de descuento y descripción. Las BagLists tienen URLs permanentes con formato liser.es/username/slug.
+
+## Para quién es Liser
+
+Liser está dirigido a creadores de contenido que quieren monetizar sus recomendaciones de productos mediante enlaces de afiliado, sin necesidad de una tienda online ni conocimientos técnicos.
+
+## Estructura del sitio
+
+- liser.es/ — Landing page
+- liser.es/explore — Explorar BagLists públicas de todos los creadores
+- liser.es/{username} — Perfil público de un creador
+- liser.es/{username}/{slug} — BagList individual con sus productos
+- liser.es/sitemap.xml — Sitemap XML con todas las BagLists públicas
+
+## Tecnología
+
+Frontend en React, backend en FastAPI, base de datos MongoDB. Imágenes alojadas en Cloudinary. Dominio liser.es, mercado español e hispanohablante.
+
+## Contacto
+
+hello@liser.es

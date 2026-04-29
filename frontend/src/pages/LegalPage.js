@@ -10,7 +10,7 @@ const LEGAL_CONTENT = {
 En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y Comercio Electrónico, se informa:
 
 - **Titular:** Liser
-- **Email de contacto:** liserbaglist@gmail.com
+- **Email de contacto:** hello@liser.es
 - **Dominio:** liser.es
 
 ## 2. Objeto y ámbito de aplicación
@@ -40,7 +40,7 @@ Las presentes condiciones se rigen por la legislación española. Para la resolu
 ## 1. Responsable del tratamiento
 
 - **Titular:** Liser
-- **Email:** liserbaglist@gmail.com
+- **Email:** hello@liser.es
 
 ## 2. Datos que recopilamos
 
@@ -62,11 +62,11 @@ El tratamiento se basa en la ejecución del contrato de prestación del servicio
 
 ## 5. Conservación de datos
 
-Los datos se conservan mientras la cuenta esté activa. El usuario puede solicitar la eliminación de su cuenta y datos en cualquier momento desde la configuración de la Plataforma o enviando un email a liserbaglist@gmail.com.
+Los datos se conservan mientras la cuenta esté activa. El usuario puede solicitar la eliminación de su cuenta y datos en cualquier momento desde la configuración de la Plataforma o enviando un email a hello@liser.es.
 
 ## 6. Derechos del usuario
 
-El usuario puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a liserbaglist@gmail.com.
+El usuario puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a hello@liser.es.
 
 ## 7. Cookies
 
@@ -108,7 +108,7 @@ Esta política puede actualizarse. Te recomendamos revisarla periódicamente.
 
 ## 5. Contacto
 
-Para cualquier consulta: liserbaglist@gmail.com
+Para cualquier consulta: hello@liser.es
     `
     }
 };

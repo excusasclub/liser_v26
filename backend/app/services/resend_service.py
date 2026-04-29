@@ -5,7 +5,7 @@ from app.database import db
 import uuid
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-FROM_EMAIL = os.getenv("FROM_EMAIL", "Liser <hola@liser.es>")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "Liser <hello@liser.es>")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.liser.es")
 
 
