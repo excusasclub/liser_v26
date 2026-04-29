@@ -153,11 +153,20 @@ export default function BagListDetailPage() {
           <meta property="og:description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
           <meta property="og:type" content="website" />
           <meta property="og:url" content={`https://liser.es/${baglist.username}/${baglist.slug}`} />
+          <meta property="og:site_name" content="Liser" />
+          <meta property="og:locale" content="es_ES" />
           {baglist.cover_image_url && <meta property="og:image" content={cloudinaryAuto(baglist.cover_image_url)} />}
+          {baglist.cover_image_url && <meta property="og:image:alt" content={`Portada de ${baglist.title}`} />}
           <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:site" content="@liser_es" />
           <meta name="twitter:title" content={`${baglist.title} — Liser`} />
           <meta name="twitter:description" content={baglist.description || `Lista de productos de ${baglist.display_name} en Liser`} />
-          {baglist.cover_image_url && <meta name="twitter:image" content={baglist.cover_image_url} />}
+          {baglist.cover_image_url && <meta name="twitter:image" content={cloudinaryAuto(baglist.cover_image_url)} />}
+          <meta property="article:published_time" content={baglist.created_at} />
+          <meta property="article:modified_time" content={baglist.updated_at} />
+          <meta property="article:author" content={baglist.display_name} />
+          <meta property="article:section" content={baglist.category} />
+          {(baglist.tags || []).map(tag => <meta key={tag} property="article:tag" content={tag} />)}
           <script type="application/ld+json">{JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ItemList",
