@@ -34,6 +34,8 @@ export default function AuthPage() {
     e.preventDefault();
     if (registerData.password.length < 6) { toast.error('La contraseña debe tener al menos 6 caracteres'); return; }
     if (registerData.username.length < 3) { toast.error('El nombre de usuario debe tener al menos 3 caracteres'); return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(registerData.username)) { toast.error('El nombre de usuario solo puede contener letras, números y guiones bajos'); return; }
+    if (registerData.username.length > 30) { toast.error('El nombre de usuario no puede superar 30 caracteres'); return; }
     setLoading(true);
     try {
       await register(registerData.email, registerData.password, registerData.username, registerData.display_name);

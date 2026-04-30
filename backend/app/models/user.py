@@ -4,7 +4,7 @@ from typing import Optional
 class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=100)
-    username: str = Field(min_length=3, max_length=30)
+    username: str = Field(min_length=3, max_length=30, pattern=r'^[a-zA-Z0-9_]+$')
     display_name: Optional[str] = Field(default=None, max_length=50)
 
 class UserLogin(BaseModel):
