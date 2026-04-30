@@ -19,6 +19,7 @@ router = APIRouter(prefix="/auth")
 @router.post("/register")
 @limiter.limit("3/minute")
 async def register(request: Request, data: UserRegister):
+    data.username = data.username.lower()
     existing = await db.users.find_one({"$or": [{"email": data.email}, {"username": data.username}]})
     if existing:
         if existing.get("email") == data.email:

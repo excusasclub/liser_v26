@@ -106,7 +106,7 @@ export default function AuthPage() {
                 <div className="space-y-2">
                   <Label htmlFor="reg-username">Nombre de usuario</Label>
                   <Input id="reg-username" data-testid="register-username" placeholder="mi_usuario" required
-                    value={registerData.username} onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })} />
+                    value={registerData.username} onChange={(e) => setRegisterData({ ...registerData, username: e.target.value.toLowerCase() })}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-display">Nombre para mostrar</Label>
