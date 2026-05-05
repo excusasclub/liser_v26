@@ -17,6 +17,7 @@ import AnalyticsPage from '@/pages/AnalyticsPage';
 import AdminPage from '@/pages/AdminPage';
 import LegalPage from '@/pages/LegalPage';
 import PricingPage from '@/pages/PricingPage';
+import ContactPage from '@/pages/ContactPage';
 import { Footer } from '@/components/Footer';
 import GoogleCallbackPage from '@/pages/GoogleCallbackPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
@@ -71,6 +72,7 @@ function AppContent() {
         <Route path="/choose-username" element={<ChooseUsernamePage />} />
         <Route path="/legal/:page" element={<LegalPage />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
