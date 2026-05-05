@@ -18,7 +18,7 @@ cloudinary.config(
     api_secret=os.getenv('CLOUDINARY_API_SECRET')
 )
 
-from app.routers import auth, baglists, users, upload, admin
+from app.routers import auth, baglists, users, upload, admin, plans
 from app.config import CATEGORIES
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -41,6 +41,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(baglists.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
+app.include_router(plans.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 
 @app.get("/api/categories")

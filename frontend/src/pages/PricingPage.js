@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Check, X, Zap, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
 
 const PLANS = [
     {
@@ -70,15 +73,42 @@ const PLANS = [
 ];
 
 export default function PricingPage() {
+    const { user } = useAuth();
     const [requested, setRequested] = useState({});
+    const [dialogPlan, setDialogPlan] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    const handleRequest = (planId) => {
-        if (requested[planId]) return;
-        const subject = encodeURIComponent(`Solicitud plan ${planId} — Liser`);
-        const body = encodeURIComponent(`Hola,\n\nMe gustaría solicitar acceso al plan ${planId} de Liser.\n\nMi username en Liser es: \n\nGracias.`);
-        window.open(`mailto:hello@liser.es?subject=${subject}&body=${body}`, '_blank');
-        setRequested(prev => ({ ...prev, [planId]: true }));
-        toast.success('Abriendo tu cliente de email...');
+    useEffect(() => {
+        if (!user) return;
+        ['pro', 'premium'].forEach(async (plan) => {
+            try {
+                const res = await api.get(`/plans/request-status/${plan}`);
+                if (res.data.requested) {
+                    setRequested(prev => ({ ...prev, [plan]: true }));
+                }
+            } catch { }
+        });
+    }, [user]);
+
+    const handleRequest = async () => {
+        if (!dialogPlan) return;
+        setLoading(true);
+        try {
+            await api.post('/plans/request', { plan: dialogPlan });
+            setRequested(prev => ({ ...prev, [dialogPlan]: true }));
+            toast.success('Solicitud enviada. Te contactaremos pronto.');
+            setDialogPlan(null);
+        } catch (err) {
+            if (err.response?.status === 409) {
+                toast.error('Ya has solicitado este plan anteriormente.');
+                setRequested(prev => ({ ...prev, [dialogPlan]: true }));
+            } else {
+                toast.error('Error al enviar la solicitud. Inténtalo de nuevo.');
+            }
+            setDialogPlan(null);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -119,15 +149,15 @@ export default function PricingPage() {
                                     </div>
                                 )}
 
-                                <div>
-                                    <div className={`w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-4`}>
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-4">
                                         <Icon className={`w-5 h-5 ${plan.color}`} />
                                     </div>
                                     <h2 className="text-xl font-bold font-['Outfit'] text-foreground">{plan.name}</h2>
                                     <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
                                 </div>
 
-                                <div className="flex items-end gap-1">
+                                <div className="flex items-end gap-1 justify-center">
                                     {plan.price === 0 ? (
                                         <span className="text-4xl font-bold font-['Outfit'] text-foreground">Gratis</span>
                                     ) : (
@@ -157,13 +187,22 @@ export default function PricingPage() {
                                     <Button variant="outline" className="w-full" onClick={() => window.location.href = '/auth'}>
                                         Empezar gratis
                                     </Button>
+                                ) : user ? (
+                                    <Button
+                                        className={`w-full ${plan.highlight ? 'bg-primary hover:bg-primary/90' : ''}`}
+                                        variant={plan.highlight ? 'default' : 'outline'}
+                                        disabled={requested[plan.id]}
+                                        onClick={() => !requested[plan.id] && setDialogPlan(plan.id)}
+                                    >
+                                        {requested[plan.id] ? '✓ Solicitud enviada' : 'Solicitar'}
+                                    </Button>
                                 ) : (
                                     <Button
                                         className={`w-full ${plan.highlight ? 'bg-primary hover:bg-primary/90' : ''}`}
                                         variant={plan.highlight ? 'default' : 'outline'}
-                                        onClick={() => handleRequest(plan.id)}
+                                        onClick={() => window.location.href = '/auth'}
                                     >
-                                        {requested[plan.id] ? '✓ Solicitud enviada' : 'Solicitar'}
+                                        Iniciar sesión para solicitar
                                     </Button>
                                 )}
                             </div>
@@ -176,6 +215,25 @@ export default function PricingPage() {
                     <a href="mailto:hello@liser.es" className="text-primary hover:underline">hello@liser.es</a>
                 </p>
             </div>
+
+            <Dialog open={!!dialogPlan} onOpenChange={(open) => !open && setDialogPlan(null)}>
+                <DialogContent className="bg-card border-border max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="font-['Outfit']">Solicitar plan {dialogPlan}</DialogTitle>
+                        <DialogDescription>
+                            Te contactaremos en tu email registrado para activar el plan. Solo puedes solicitar cada plan una vez.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-3 mt-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setDialogPlan(null)}>
+                            Cancelar
+                        </Button>
+                        <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={handleRequest} disabled={loading}>
+                            {loading ? 'Enviando...' : 'Confirmar solicitud'}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
