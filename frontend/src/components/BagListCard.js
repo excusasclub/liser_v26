@@ -61,7 +61,7 @@ export function BagListCard({ baglist, onUpdate, compact = false }) {
               </Button>
             </div>
           )}
-          {baglist.category && baglist.category !== 'Other' && (
+          {baglist.category && baglist.category !== 'Otros' && (
             <Badge className="absolute bottom-3 left-3 bg-primary/80 backdrop-blur-sm text-xs border-0">
               {baglist.category}
             </Badge>

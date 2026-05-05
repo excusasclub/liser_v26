@@ -65,11 +65,11 @@ export function Navbar() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={toggleTheme} title="Cambiar tema">
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
               {user ? (
                 <>
-                  <Button variant="ghost" size="icon" onClick={toggleTheme} title="Cambiar tema">
-                    {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                  </Button>
                   <Link to="/create" data-testid="nav-create">
                     <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 neon-glow">
                       <Plus className="w-4 h-4" /> Nueva BagList

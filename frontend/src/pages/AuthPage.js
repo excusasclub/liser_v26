@@ -32,7 +32,8 @@ export default function AuthPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (registerData.password.length < 6) { toast.error('La contraseña debe tener al menos 6 caracteres'); return; }
+    if (registerData.password.length < 8) { toast.error('La contraseña debe tener al menos 8 caracteres'); return; }
+    if (!/(?=.*[A-Z])(?=.*[0-9])/.test(registerData.password)) { toast.error('La contraseña debe contener al menos una mayúscula y un número'); return; }
     if (registerData.username.length < 3) { toast.error('El nombre de usuario debe tener al menos 3 caracteres'); return; }
     if (!/^[a-zA-Z0-9_]+$/.test(registerData.username)) { toast.error('El nombre de usuario solo puede contener letras, números y guiones bajos'); return; }
     if (registerData.username.length > 30) { toast.error('El nombre de usuario no puede superar 30 caracteres'); return; }
@@ -77,8 +78,8 @@ export default function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input id="login-email" data-testid="login-email" type="email" placeholder="tu@email.com" required
+                  <Label htmlFor="login-email">Email o nombre de usuario</Label>
+                  <Input id="login-email" data-testid="login-email" type="text" placeholder="tu@email.com o tu_usuario" required
                     value={loginData.email} onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} />
                 </div>
                 <div className="space-y-2">
@@ -100,22 +101,22 @@ export default function AuthPage() {
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="reg-email">Email</Label>
-                  <Input id="reg-email" data-testid="register-email" type="email" placeholder="tu@email.com" required
+                  <Input id="reg-email" data-testid="register-email" type="email" placeholder="tu@email.com" required maxLength={100}
                     value={registerData.email} onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-username">Nombre de usuario</Label>
-                  <Input id="reg-username" data-testid="register-username" placeholder="mi_usuario" required
+                  <Input id="reg-username" data-testid="register-username" placeholder="mi_usuario" required maxLength={30}
                     value={registerData.username} onChange={(e) => setRegisterData({ ...registerData, username: e.target.value.toLowerCase() })} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-display">Nombre para mostrar</Label>
-                  <Input id="reg-display" data-testid="register-display-name" placeholder="Mi Nombre"
+                  <Input id="reg-display" data-testid="register-display-name" placeholder="Mi Nombre" maxLength={50}
                     value={registerData.display_name} onChange={(e) => setRegisterData({ ...registerData, display_name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-password">Contraseña</Label>
-                  <Input id="reg-password" data-testid="register-password" type="password" placeholder="Minimo 6 caracteres" required
+                  <Input id="reg-password" data-testid="register-password" type="password" placeholder="Mínimo 8 caracteres" required maxLength={100}
                     value={registerData.password} onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })} />
                 </div>
                 <Button type="submit" data-testid="register-submit" disabled={loading} className="w-full bg-primary hover:bg-primary/90 neon-glow">

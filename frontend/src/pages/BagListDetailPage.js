@@ -195,7 +195,7 @@ export default function BagListDetailPage() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
-              {baglist.category && baglist.category !== 'Other' && (
+              {baglist.category && baglist.category !== 'Otros' && (
                 <Badge className="bg-primary/20 text-primary border-0">{baglist.category}</Badge>
               )}
               {baglist.tags?.map(tag => (
