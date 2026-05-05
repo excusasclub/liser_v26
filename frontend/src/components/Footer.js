@@ -10,7 +10,8 @@ export function Footer() {
                     <Link to="/legal/aviso-legal" className="hover:text-foreground transition-colors">Aviso Legal</Link>
                     <Link to="/legal/privacidad" className="hover:text-foreground transition-colors">Privacidad</Link>
                     <Link to="/legal/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
-                    <a href="mailto:liserbaglist@gmail.com" className="hover:text-foreground transition-colors">Contacto</a>
+                    <Link to="/pricing" className="hover:text-foreground transition-colors">Planes</Link>
+                    <a href="mailto:hello@liser.es" className="hover:text-foreground transition-colors">Contacto</a>
                 </div>
             </div>
         </footer>
