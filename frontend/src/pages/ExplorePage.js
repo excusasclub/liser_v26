@@ -77,10 +77,10 @@ export default function ExplorePage() {
 
       {/* Filters */}
       <div className="flex flex-col gap-3 mb-6">
-        <div className="flex gap-3">
-          <form onSubmit={handleSearch} className="flex-1 relative">
+        <div className="flex gap-3 flex-wrap">
+          <form onSubmit={handleSearch} className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input data-testid="explore-search" placeholder="Buscar listas, productos, etiquetas..."
+            <Input data-testid="explore-search" placeholder="Buscar..."
               className="pl-10 pr-10" value={search} onChange={(e) => setSearch(e.target.value)} />
             {search && (
               <button className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => { setSearch(''); setPage(1); }}>
@@ -88,40 +88,44 @@ export default function ExplorePage() {
               </button>
             )}
           </form>
-          <Select value={sort} onValueChange={(v) => { setSort(v); setPage(1); }}>
-            <SelectTrigger data-testid="explore-sort-filter" className="w-[130px] shrink-0"><SelectValue placeholder="Ordenar" /></SelectTrigger>
-            <SelectContent className="bg-card border-border">
-              <SelectItem value="newest">Recientes</SelectItem>
-              <SelectItem value="popular">Populares</SelectItem>
-              <SelectItem value="oldest">Antiguos</SelectItem>
-              <SelectItem value="az">A-Z</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {CATEGORIES.map(c => (
-            <button
-              key={c}
-              data-testid={`category-chip-${c}`}
-              onClick={() => { setCategory(c); setPage(1); }}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${category === c
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
-                }`}
-            >
-              {c === 'All' ? 'Todas' : c}
-            </button>
-          ))}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground shrink-0">Categoría:</span>
+            <Select value={category} onValueChange={(v) => { setCategory(v); setPage(1); }}>
+              <SelectTrigger data-testid="explore-category-filter" className="w-[150px]"><SelectValue placeholder="Todas" /></SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c === 'All' ? 'Todas' : c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground shrink-0">Ordenar:</span>
+            <Select value={sort} onValueChange={(v) => { setSort(v); setPage(1); }}>
+              <SelectTrigger data-testid="explore-sort-filter" className="w-[130px]"><SelectValue placeholder="Recientes" /></SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                <SelectItem value="newest">Recientes</SelectItem>
+                <SelectItem value="popular">Populares</SelectItem>
+                <SelectItem value="oldest">Antiguos</SelectItem>
+                <SelectItem value="az">A-Z</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
-      {/* Active search filter */}
-      {search && (
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-muted-foreground">Buscando:</span>
-          <Badge variant="secondary" className="gap-1 pr-1">
-            "{search}" <button onClick={() => { setSearch(''); setPage(1); }}><X className="w-3 h-3" /></button>
-          </Badge>
+      {/* Active filters */}
+      {(category !== 'All' || search) && (
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <span className="text-sm text-muted-foreground">Filtros:</span>
+          {category !== 'All' && (
+            <Badge variant="secondary" className="gap-1 pr-1">
+              {category} <button onClick={() => { setCategory('All'); setPage(1); }}><X className="w-3 h-3" /></button>
+            </Badge>
+          )}
+          {search && (
+            <Badge variant="secondary" className="gap-1 pr-1">
+              "{search}" <button onClick={() => { setSearch(''); setPage(1); }}><X className="w-3 h-3" /></button>
+            </Badge>
+          )}
         </div>
       )}
 

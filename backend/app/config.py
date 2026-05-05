@@ -9,7 +9,7 @@ MONGO_URL = os.environ['MONGO_URL']
 DB_NAME = os.environ['DB_NAME']
 JWT_SECRET = os.environ['JWT_SECRET']
 
-CATEGORIES = ["Tech", "Fashion", "Hogar", "Belleza", "Deportes", "Cocina", "Viajes", "Libros", "Gaming", "Lifestyle" "Otros"]
+CATEGORIES = ["Tech", "Fashion", "Hogar", "Belleza", "Deportes", "Cocina", "Viajes", "Libros", "Gaming", "Lifestyle", "Otros"]
 
 PLAN_LIMITS = {
     "free": {
