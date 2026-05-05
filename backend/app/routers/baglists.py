@@ -17,6 +17,12 @@ router = APIRouter(prefix="/baglists")
 
 @router.post("")
 async def create_baglist(data: BagListCreate, user=Depends(get_required_user)):
+    from app.config import PLAN_LIMITS
+    plan = user.get("plan", "free")
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+    user_baglists_count = await db.baglists.count_documents({"user_id": user["id"]})
+    if user_baglists_count >= limits["max_baglists"]:
+        raise HTTPException(status_code=403, detail=f"Has alcanzado el límite de {limits['max_baglists']} BagLists para el plan {plan}")
     baglist_id = str(uuid.uuid4())
     base_slug = slugify(data.title)
     unique_slug = await generate_unique_slug(db, base_slug)
@@ -168,9 +174,15 @@ async def delete_baglist(baglist_id: str, user=Depends(get_required_user)):
 
 @router.post("/{baglist_id}/products")
 async def add_product(baglist_id: str, data: ProductCreate, user=Depends(get_required_user)):
+    from app.config import PLAN_LIMITS
     baglist = await db.baglists.find_one({"id": baglist_id, "user_id": user["id"]}, {"_id": 0})
     if not baglist:
         raise HTTPException(status_code=404, detail="BagList not found")
+    plan = user.get("plan", "free")
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+    current_products = len(baglist.get("products", []))
+    if current_products >= limits["max_products_per_list"]:
+        raise HTTPException(status_code=403, detail=f"Has alcanzado el límite de {limits['max_products_per_list']} productos por BagList para el plan {plan}")
     product = {
         "id": str(uuid.uuid4()),
         "name": data.name,
@@ -263,7 +275,10 @@ async def follow_baglist(baglist_id: str, data: FollowerCapture):
 
 @router.post("/{baglist_id}/products/{product_id}/click")
 @limiter.limit("30/minute")
-async def register_click(request: Request, baglist_id: str, product_id: str):
+async def register_click(request: Request, baglist_id: str, product_id: str, user=Depends(get_optional_user)):
+    baglist_owner = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "user_id": 1})
+    if user and baglist_owner and user["id"] == baglist_owner["user_id"]:
+        return {"ok": True}
     await db.clicks.insert_one({"id": str(uuid.uuid4()), "baglist_id": baglist_id, "product_id": product_id, "type": "affiliate", "created_at": datetime.now(timezone.utc).isoformat()})
     baglist = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "products": 1})
     if baglist:

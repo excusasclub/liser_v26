@@ -13,8 +13,8 @@ CATEGORIES = ["Tech", "Fashion", "Home", "Beauty", "Sports", "Food", "Travel", "
 
 PLAN_LIMITS = {
     "free": {
-        "max_baglists": 10,
-        "max_products_per_list": 30,
+        "max_baglists": 3,
+        "max_products_per_list": 7,
         "analytics": True,
         "custom_fields": True,
         "social_links": True,
@@ -22,8 +22,8 @@ PLAN_LIMITS = {
         "max_image_size_mb": 5,
     },
     "pro": {
-        "max_baglists": 100,
-        "max_products_per_list": 200,
+        "max_baglists": 10,
+        "max_products_per_list": 12,
         "analytics": True,
         "custom_fields": True,
         "social_links": True,
@@ -31,8 +31,8 @@ PLAN_LIMITS = {
         "max_image_size_mb": 10,
     },
     "premium": {
-        "max_baglists": -1,
-        "max_products_per_list": -1,
+        "max_baglists": 25,
+        "max_products_per_list": 20,
         "analytics": True,
         "custom_fields": True,
         "social_links": True,
