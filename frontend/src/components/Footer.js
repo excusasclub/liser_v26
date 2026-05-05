@@ -11,7 +11,7 @@ export function Footer() {
                     <Link to="/legal/privacidad" className="hover:text-foreground transition-colors">Privacidad</Link>
                     <Link to="/legal/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
                     <Link to="/pricing" className="hover:text-foreground transition-colors">Planes</Link>
-                    <a href="mailto:hello@liser.es" className="hover:text-foreground transition-colors">Contacto</a>
+                    <Link to="/contact" className="hover:text-foreground transition-colors">Contacto</Link>
                 </div>
             </div>
         </footer>
