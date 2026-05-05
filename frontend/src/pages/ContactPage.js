@@ -122,7 +122,7 @@ export default function ContactPage() {
                             )}
                         </Button>
                         <p className="text-xs text-muted-foreground text-center">
-                            Máximo 3 mensajes por día. También puedes escribirnos directamente a{' '}
+                            También puedes escribirnos directamente a{' '}
                             <a href="mailto:hello@liser.es" className="text-primary hover:underline">hello@liser.es</a>
                         </p>
                     </form>
