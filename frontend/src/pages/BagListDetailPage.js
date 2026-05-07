@@ -254,7 +254,7 @@ export default function BagListDetailPage() {
         {/* Products */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold font-['Outfit'] text-foreground">
-            Productos <span className="text-muted-foreground font-normal text-base ml-2">({baglist.products?.length || 0})</span>
+            Productos
           </h2>
         </div>
 
