@@ -189,7 +189,7 @@ async def add_product(baglist_id: str, data: ProductCreate, user=Depends(get_req
         "image_url": data.image_url or "",
         "price": data.price if data.price is not None else None,
         "currency": data.currency or "EUR",
-        "link": data.link or "",
+        "link": (lambda l: f"https://{l}" if l and not l.startswith(('http://', 'https://')) else l or "")(data.link),
         "description": data.description or "",
         "discount_code": data.discount_code or "",
         "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields else [],
@@ -209,7 +209,7 @@ async def update_product(baglist_id: str, product_id: str, data: ProductCreate, 
     products = baglist.get("products", [])
     for i, p in enumerate(products):
         if p["id"] == product_id:
-            products[i] = {**p, "name": data.name, "image_url": data.image_url or "", "price": data.price if data.price is not None else None, "currency": data.currency or "EUR", "link": data.link or "", "description": data.description or "", "discount_code": data.discount_code or "",
+            products[i] = {**p, "name": data.name, "image_url": data.image_url or "", "price": data.price if data.price is not None else None, "currency": data.currency or "EUR", "link": (lambda l: f"https://{l}" if l and not l.startswith(('http://', 'https://')) else l or "")(data.link), "description": data.description or "", "discount_code": data.discount_code or "",
                 "custom_fields": [f.model_dump() for f in data.custom_fields] if data.custom_fields is not None else [],
                 "social_links": [s.model_dump() for s in data.social_links] if data.social_links is not None else [],
                 "updated_at": datetime.now(timezone.utc).isoformat()}

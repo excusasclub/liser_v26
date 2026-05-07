@@ -17,6 +17,12 @@ const cloudinaryAuto = (url) => {
   if (!url || !url.includes('res.cloudinary.com')) return url;
   return url.replace('/upload/', '/upload/f_auto,q_auto/');
 };
+
+const normalizeUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+};
 export default function BagListDetailPage() {
   const { username, slug } = useParams();
   const { user } = useAuth();
@@ -264,7 +270,7 @@ export default function BagListDetailPage() {
                 className="group border-border/50 bg-card hover:border-primary/20 transition-all duration-300 overflow-hidden">
                 <CardContent className="p-0 flex">
                   {product.link ? (
-                    <a href={product.link} target="_blank" rel="noopener noreferrer"
+                    <a href={normalizeUrl(product.link)} target="_blank" rel="noopener noreferrer"
                       onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}
                       className="w-32 h-32 shrink-0 overflow-hidden bg-muted block">
                       {product.image_url ? (
@@ -289,7 +295,7 @@ export default function BagListDetailPage() {
                   <div className="flex-1 p-4 flex flex-col gap-2 min-w-0">
                     {/* Nombre */}
                     {product.link ? (
-                      <a href={product.link} target="_blank" rel="noopener noreferrer"
+                      <a href={normalizeUrl(product.link)} target="_blank" rel="noopener noreferrer"
                         onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}>
                         <h3 className="font-semibold text-foreground text-sm font-['Outfit'] hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
                       </a>
@@ -341,7 +347,7 @@ export default function BagListDetailPage() {
                         </button>
                       )}
                       {product.link && (
-                        <a href={product.link} target="_blank" rel="noopener noreferrer"
+                        <a href={normalizeUrl(product.link)} target="_blank" rel="noopener noreferrer"
                           onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}>
                           <Button size="sm" className="gap-1.5 text-xs h-7 px-3 bg-primary hover:bg-primary/90 text-primary-foreground">
                             <ExternalLink className="w-3 h-3" /> Ver producto
