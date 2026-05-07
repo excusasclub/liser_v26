@@ -105,3 +105,24 @@ async def send_reset_password(email: str, username: str, token: str):
 async def send_follower_notification(email: str, username: str, baglist_title: str, baglist_id: str):
     baglist_url = f"{FRONTEND_URL}/{username}/{baglist_id}"
     return await send_email(email, f"'{baglist_title}' se ha actualizado", follower_notification_html(username, baglist_title, baglist_url), type="follower_notification")
+
+def verification_email_html(username: str, verify_url: str) -> str:
+    return f"""
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#0a0a0a;color:#fff;border-radius:12px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="width:48px;height:48px;background:#22c55e;border-radius:12px;display:inline-flex;align-items:center;justify-content:center">
+          <span style="color:#fff;font-weight:bold;font-size:20px">L</span>
+        </div>
+      </div>
+      <h1 style="font-size:24px;margin-bottom:16px">Verifica tu email, {username} ✉️</h1>
+      <p style="color:#a1a1aa;line-height:1.6">Para empezar a usar Liser necesitas verificar tu dirección de email.</p>
+      <div style="margin:32px 0;text-align:center">
+        <a href="{verify_url}" style="background:#22c55e;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600">Verificar email</a>
+      </div>
+      <p style="color:#52525b;font-size:12px;text-align:center">Si no creaste esta cuenta, ignora este email.</p>
+    </div>
+    """
+
+async def send_verification_email(email: str, username: str, token: str):
+    verify_url = f"https://api.liser.es/api/auth/verify-email?token={token}"
+    return await send_email(email, "Verifica tu email en Liser ✉️", verification_email_html(username, verify_url), type="verification")

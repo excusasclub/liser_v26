@@ -24,6 +24,14 @@ async def get_required_user(authorization: str = Header(...)):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+async def get_verified_user(authorization: str = Header(...)):
+    user = await get_current_user(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    if not user.get("email_verified", False):
+        raise HTTPException(status_code=403, detail="email_not_verified")
+    return user
+
 async def get_required_admin(authorization: str = Header(...)):
     user = await get_current_user(authorization)
     if not user:

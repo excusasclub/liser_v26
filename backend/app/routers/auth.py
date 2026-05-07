@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
-from app.models.user import UserRegister, UserLogin, UserUpdate
+from app.models.user import UserRegister, UserLogin, UserUpdate, ForgotPasswordRequest, ResetPasswordRequest, ChooseUsernameRequest
 from app.services.auth_service import hash_password, verify_password, create_token
 from app.dependencies import get_required_user
 from app.database import db
@@ -10,8 +10,10 @@ import uuid
 from fastapi.responses import RedirectResponse
 import httpx
 import os
+import re
 import secrets
-from app.services.resend_service import send_welcome, send_reset_password
+from app.services.resend_service import send_welcome, send_reset_password, send_verification_email
+
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/auth")
@@ -26,6 +28,7 @@ async def register(request: Request, data: UserRegister):
             raise HTTPException(status_code=400, detail="Email already exists")
         raise HTTPException(status_code=400, detail="Username already taken")
     user_id = str(uuid.uuid4())
+    verification_token = secrets.token_urlsafe(32)
     user_doc = {
         "id": user_id,
         "email": data.email,
@@ -37,13 +40,15 @@ async def register(request: Request, data: UserRegister):
         "role": "user",
         "plan": "free",
         "suspended": False,
+        "email_verified": False,
+        "verification_token": verification_token,
         "last_login": None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
     token = create_token(user_id)
     try:
-        await send_welcome(data.email, data.username)
+        await send_verification_email(data.email, data.username, verification_token)
     except Exception:
         pass
     return {
@@ -64,7 +69,11 @@ async def register(request: Request, data: UserRegister):
 @router.post("/login")
 @limiter.limit("5/minute")
 async def login(request: Request, data: UserLogin):
-    user = await db.users.find_one({"email": data.email}, {"_id": 0})
+    identifier = data.email.strip()
+    user = await db.users.find_one(
+        {"$or": [{"email": identifier}, {"username": identifier.lower()}]},
+        {"_id": 0}
+    )
     if not user or not verify_password(data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     await db.users.update_one({"id": user["id"]}, {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}})
@@ -80,6 +89,7 @@ async def login(request: Request, data: UserLogin):
             "avatar_url": user.get("avatar_url", ""),
             "role": user.get("role", "user"),
             "plan": user.get("plan", "free"),
+            "email_verified": user.get("email_verified", False),
             "created_at": user["created_at"]
         }
     }
@@ -95,6 +105,7 @@ async def get_me(user=Depends(get_required_user)):
         "avatar_url": user.get("avatar_url", ""),
         "role": user.get("role", "user"),
         "plan": user.get("plan", "free"),
+        "email_verified": user.get("email_verified", False),
         "created_at": user["created_at"]
     }
 
@@ -187,13 +198,27 @@ async def google_callback(code: str):
     if existing:
         return RedirectResponse(f"{FRONTEND_URL}/auth/google?token={token}")
     return RedirectResponse(f"{FRONTEND_URL}/choose-username?token={token}")
+@router.get("/verify-email")
+async def verify_email(token: str):
+    user = await db.users.find_one({"verification_token": token}, {"_id": 0})
+    if not user:
+        return RedirectResponse(f"{FRONTEND_URL}/auth?error=invalid_token")
+    await db.users.update_one(
+        {"verification_token": token},
+        {"$set": {"email_verified": True}, "$unset": {"verification_token": ""}}
+    )
+    jwt_token = create_token(user["id"])
+    return RedirectResponse(f"{FRONTEND_URL}/auth/google?token={jwt_token}&verified=1")
 
 @router.post("/forgot-password")
-async def forgot_password(body: dict):
-    email = body.get("email", "").strip().lower()
-    if not email:
-        raise HTTPException(status_code=400, detail="Email requerido")
-    user = await db.users.find_one({"email": email}, {"_id": 0})
+@limiter.limit("3/hour")
+async def forgot_password(request: Request, data: ForgotPasswordRequest):
+    email = data.email.strip().lower()
+    identifier = data.email.strip()
+    user = await db.users.find_one(
+        {"$or": [{"email": identifier}, {"username": identifier.lower()}]},
+        {"_id": 0}
+    )
     if not user:
         return {"ok": True}
     reset_token = secrets.token_urlsafe(32)
@@ -204,13 +229,17 @@ async def forgot_password(body: dict):
 
 
 @router.post("/reset-password")
-async def reset_password(body: dict):
-    token = body.get("token", "")
-    new_password = body.get("password", "")
-    if not token or not new_password:
-        raise HTTPException(status_code=400, detail="Datos incompletos")
-    if len(new_password) < 6:
-        raise HTTPException(status_code=400, detail="Mínimo 6 caracteres")
+async def reset_password(data: ResetPasswordRequest):
+    token = data.token
+    new_password = data.password
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Mínimo 8 caracteres")
+    if not re.search(r'[A-Z]', new_password):
+        raise HTTPException(status_code=400, detail="La contraseña debe contener al menos una mayúscula")
+    if not re.search(r'[0-9]', new_password):
+        raise HTTPException(status_code=400, detail="La contraseña debe contener al menos un número")
+    if len(new_password) > 100:
+        raise HTTPException(status_code=400, detail="Contraseña demasiado larga")
     user = await db.users.find_one({"reset_token": token}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=400, detail="Token inválido")
@@ -234,15 +263,24 @@ async def delete_account(user=Depends(get_required_user)):
     return {"ok": True}
 
 @router.post("/choose-username")
-async def choose_username(body: dict, user=Depends(get_required_user)):
-    username = body.get("username", "").strip().lower()
-    if len(username) < 3:
-        raise HTTPException(status_code=400, detail="Mínimo 3 caracteres")
-    import re
-    if not re.match(r'^[a-z0-9_]+$', username):
-        raise HTTPException(status_code=400, detail="Solo letras minúsculas, números y guiones bajos")
+async def choose_username(data: ChooseUsernameRequest, user=Depends(get_required_user)):
+    username = data.username.strip().lower()
     existing = await db.users.find_one({"username": username, "id": {"$ne": user["id"]}})
     if existing:
         raise HTTPException(status_code=400, detail="Username ya en uso")
     await db.users.update_one({"id": user["id"]}, {"$set": {"username": username}})
+    return {"ok": True}
+
+
+@router.post("/resend-verification")
+@limiter.limit("2/hour")
+async def resend_verification(request: Request, user=Depends(get_required_user)):
+    if user.get("email_verified", False):
+        raise HTTPException(status_code=400, detail="Email ya verificado")
+    verification_token = secrets.token_urlsafe(32)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"verification_token": verification_token}}
+    )
+    await send_verification_email(user["email"], user["username"], verification_token)
     return {"ok": True}

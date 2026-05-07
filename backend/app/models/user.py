@@ -34,3 +34,13 @@ class UserUpdate(BaseModel):
     display_name: Optional[str] = Field(default=None, max_length=50)
     bio: Optional[str] = Field(default=None, max_length=500)
     avatar_url: Optional[str] = Field(default=None, max_length=500)
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=200)
+    password: str = Field(min_length=8, max_length=100)
+
+class ChooseUsernameRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=30, pattern=r'^[a-z0-9_]+$')

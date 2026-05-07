@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, Request
-from app.dependencies import get_required_user, get_optional_user
+from app.dependencies import get_required_user, get_optional_user, get_verified_user
 from app.models.baglist import BagListCreate, BagListUpdate
 from app.models.product import ProductCreate, DuplicateProductRequest, FollowerCapture
 from app.database import db
@@ -16,7 +16,7 @@ limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/baglists")
 
 @router.post("")
-async def create_baglist(data: BagListCreate, user=Depends(get_required_user)):
+async def create_baglist(data: BagListCreate, user=Depends(get_verified_user)):
     from app.config import PLAN_LIMITS
     plan = user.get("plan", "free")
     limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
@@ -173,7 +173,7 @@ async def delete_baglist(baglist_id: str, user=Depends(get_required_user)):
     return {"message": "Deleted"}
 
 @router.post("/{baglist_id}/products")
-async def add_product(baglist_id: str, data: ProductCreate, user=Depends(get_required_user)):
+async def add_product(baglist_id: str, data: ProductCreate, user=Depends(get_verified_user)):
     from app.config import PLAN_LIMITS
     baglist = await db.baglists.find_one({"id": baglist_id, "user_id": user["id"]}, {"_id": 0})
     if not baglist:

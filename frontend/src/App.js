@@ -19,6 +19,8 @@ import LegalPage from '@/pages/LegalPage';
 import PricingPage from '@/pages/PricingPage';
 import ContactPage from '@/pages/ContactPage';
 import { Footer } from '@/components/Footer';
+import api from '@/lib/api';
+import { toast } from 'sonner';
 import GoogleCallbackPage from '@/pages/GoogleCallbackPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import ChooseUsernamePage from '@/pages/ChooseUsernamePage';
@@ -54,6 +56,24 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
       <Navbar />
+      {user && !user.email_verified && (
+        <div className="bg-yellow-500/10 border-b border-yellow-500/30 px-4 py-2 text-center text-sm text-yellow-600 dark:text-yellow-400">
+          Verifica tu email para poder crear BagLists. Revisa tu bandeja de entrada.{' '}
+          <button
+            className="underline font-medium hover:text-yellow-700 dark:hover:text-yellow-300"
+            onClick={async () => {
+              try {
+                await api.post('/auth/resend-verification');
+                toast.success('Email de verificación reenviado');
+              } catch {
+                toast.error('Error al reenviar. Inténtalo más tarde.');
+              }
+            }}
+          >
+            Reenviar email
+          </button>
+        </div>
+      )}
       <Routes>
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
