@@ -54,7 +54,7 @@ export default function CategoryPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {baglists.map(b => (
+                    {baglists.filter(b => b).map(b => (
                         <BagListCard
                             key={b.id}
                             baglist={b}
