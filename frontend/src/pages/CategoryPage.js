@@ -11,7 +11,9 @@ export default function CategoryPage() {
     const [baglists, setBaglists] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const category = decodeURIComponent(slug);
+    const category =
+        decodeURIComponent(slug).charAt(0).toUpperCase() +
+        decodeURIComponent(slug).slice(1);
 
     useEffect(() => {
         fetchBaglists();
