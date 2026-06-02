@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, SlidersHorizontal, Loader2, Package, X } from 'lucide-react';
+import { Folder, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
@@ -75,88 +76,32 @@ export default function ExplorePage() {
         <p className="text-muted-foreground">Descubre BagLists de productos curadas por la comunidad</p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-3 mb-6">
-        <div className="flex gap-3 flex-wrap">
-          <form onSubmit={handleSearch} className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input data-testid="explore-search" placeholder="Buscar..."
-              className="pl-10 pr-10" value={search} onChange={(e) => setSearch(e.target.value)} />
-            {search && (
-              <button className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => { setSearch(''); setPage(1); }}>
-                <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-              </button>
-            )}
-          </form>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground shrink-0">Categoría:</span>
-            <Select value={category} onValueChange={(v) => { setCategory(v); setPage(1); }}>
-              <SelectTrigger data-testid="explore-category-filter" className="w-[150px]"><SelectValue placeholder="Todas" /></SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c === 'All' ? 'Todas' : c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground shrink-0">Ordenar:</span>
-            <Select value={sort} onValueChange={(v) => { setSort(v); setPage(1); }}>
-              <SelectTrigger data-testid="explore-sort-filter" className="w-[130px]"><SelectValue placeholder="Recientes" /></SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="newest">Recientes</SelectItem>
-                <SelectItem value="popular">Populares</SelectItem>
-                <SelectItem value="oldest">Antiguos</SelectItem>
-                <SelectItem value="az">A-Z</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      {/* Active filters */}
-      {(category !== 'All' || search) && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className="text-sm text-muted-foreground">Filtros:</span>
-          {category !== 'All' && (
-            <Badge variant="secondary" className="gap-1 pr-1">
-              {category} <button onClick={() => { setCategory('All'); setPage(1); }}><X className="w-3 h-3" /></button>
-            </Badge>
-          )}
-          {search && (
-            <Badge variant="secondary" className="gap-1 pr-1">
-              "{search}" <button onClick={() => { setSearch(''); setPage(1); }}><X className="w-3 h-3" /></button>
-            </Badge>
-          )}
-        </div>
-      )}
-
       {/* Results */}
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-      ) : baglists.length === 0 ? (
-        <div className="text-center py-20">
-          <Package className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold font-['Outfit'] text-foreground mb-2">No se encontraron listas</h3>
-          <p className="text-muted-foreground">Intenta con otros filtros o terminos de busqueda</p>
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {baglists.map(b => (
-              <BagListCard key={b.id} baglist={b} onUpdate={updateBaglist} />
-            ))}
-          </div>
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-10">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="prev-page-btn">
-                Anterior
-              </Button>
-              <span className="flex items-center px-3 text-sm text-muted-foreground">{page} / {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="next-page-btn">
-                Siguiente
-              </Button>
-            </div>
-          )}
-        </>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {CATEGORIES.filter(c => c !== 'All').map(category => (
+            <Link
+              key={category}
+              to={`/explore/${encodeURIComponent(category.toLowerCase())}`}
+              className="bg-card border border-border rounded-2xl p-6 hover:border-primary transition"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Folder className="w-6 h-6 text-primary" />
+                <h3 className="text-xl font-semibold font-['Outfit']">
+                  {category}
+                </h3>
+              </div>
+
+              <p className="text-muted-foreground text-sm">
+                Explorar listas de {category}
+              </p>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );

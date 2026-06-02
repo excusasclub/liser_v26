@@ -9,6 +9,7 @@ import DashboardPage from "@/pages/DashboardPage";
 import BagListDetailPage from "@/pages/BagListDetailPage";
 import CreateBagListPage from "@/pages/CreateBagListPage";
 import ExplorePage from "@/pages/ExplorePage";
+import CategoryPage from './pages/CategoryPage';
 import SavedPage from "@/pages/SavedPage";
 import ProfilePage from "@/pages/ProfilePage";
 import NotFoundPage from "@/pages/NotFoundPage";
@@ -78,6 +79,7 @@ function AppContent() {
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
         <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/explore/:slug" element={<CategoryPage />} />
         <Route path="/:username/:slug" element={<BagListDetailPage />} />
         <Route path="/user/:username" element={<ProfilePage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
