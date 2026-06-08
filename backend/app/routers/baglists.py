@@ -53,11 +53,14 @@ async def list_baglists(
     page: int = 1,
     limit: int = 20,
     user_id: Optional[str] = None,
+    featured: Optional[bool] = None,
     user=Depends(get_optional_user)
 ):
     query = {"is_public": True}
     if category and category != "All":
         query["category"] = category
+    if featured:
+        query["featured"] = True
     if search:
         safe_search = re.escape(search)
         query["$or"] = [

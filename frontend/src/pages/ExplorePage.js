@@ -1,108 +1,95 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { BagListCard } from '@/components/BagListCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Folder, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { BagListCard } from '@/components/BagListCard';
+import { Loader2, Sparkles } from 'lucide-react';
 import api from '../lib/api';
-import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
-export default function ExplorePage() {
-  const { user } = useAuth();
-  const [CATEGORIES, setCATEGORIES] = useState(["All"]);
-  const [baglists, setBaglists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('All');
-  const [sort, setSort] = useState('newest');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const debounceRef = useRef(null);
+const CATEGORY_IMAGES = {
+  Tech: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913221/tech_no_watermark_imv8mi.png',
+  Fashion: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913223/fashion_no_watermark_uc86hn.png',
+  Hogar: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913218/hogar_no_watermark_mc35sd.png',
+  Belleza: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913220/belleza_no_watermark_bfiegs.png',
+  Deportes: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913218/deportes_no_watermark_cnxcge.png',
+  Cocina: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913218/cocina_no_watermark_bedgmw.png',
+  Viajes: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913223/viaje_no_watermark_ijeked.png',
+  Libros: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913219/libros_no_watermark_mfel44.png',
+  Gaming: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913220/gaming_no_watermark_lgxpdm.png',
+  Lifestyle: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913220/lifestyle_no_watermark_smarcs.png',
+  Otros: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913221/otros_no_watermark_g4sxqs.png',
+};
 
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setPage(1);
-      fetchBaglists();
-    }, 400);
-    return () => clearTimeout(debounceRef.current);
-  }, [search]);
+export default function ExplorePage() {
+  const [categories, setCategories] = useState([]);
+  const [featured, setFeatured] = useState([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
   useEffect(() => {
     api.get('/categories')
-      .then(res => setCATEGORIES(["All", ...res.data]))
+      .then(res => setCategories(res.data))
       .catch(() => { });
+
+    api.get('/baglists?featured=true&limit=6')
+      .then(res => setFeatured(res.data.baglists))
+      .catch(() => { })
+      .finally(() => setLoadingFeatured(false));
   }, []);
 
-  const fetchBaglists = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: String(page), limit: '20', sort });
-      if (category !== 'All') params.set('category', category);
-      if (search) params.set('search', search);
-      const res = await api.get(`/baglists?${params}`);
-      setBaglists(res.data.baglists);
-      setTotalPages(res.data.pages);
-    } catch { toast.error('Error al cargar las listas'); }
-    finally { setLoading(false); }
-  }, [page, sort, category, search, user]);
-
-  useEffect(() => {
-    if (!search) fetchBaglists();
-  }, [page, sort, category]);
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPage(1);
-    fetchBaglists();
-  };
-
-  const updateBaglist = (updated) => {
-    setBaglists(prev => prev.map(b => b.id === updated.id ? updated : b));
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="explore-page">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Helmet>
-        <title>Explorar BagLists — Liser</title>
+        <title>Explorar — Liser</title>
         <meta name="description" content="Descubre BagLists de productos curadas por la comunidad de Liser" />
-        <meta property="og:title" content="Explorar BagLists — Liser" />
-        <meta property="og:description" content="Descubre BagLists de productos curadas por la comunidad de Liser" />
       </Helmet>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-['Outfit'] text-foreground mb-2">Explorar BagLists</h1>
-        <p className="text-muted-foreground">Descubre BagLists de productos curadas por la comunidad</p>
-      </div>
 
-      {/* Results */}
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CATEGORIES.filter(c => c !== 'All').map(category => (
+      {/* Categorías */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold font-['Outfit'] text-foreground mb-6">Categorías</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {categories.map(cat => (
             <Link
-              key={category}
-              to={`/explore/${encodeURIComponent(category.toLowerCase())}`}
-              className="bg-card border border-border rounded-2xl p-6 hover:border-primary transition"
+              key={cat}
+              to={`/explore/${encodeURIComponent(cat.toLowerCase())}`}
+              className="group relative overflow-hidden rounded-2xl aspect-[4/3] block"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <Folder className="w-6 h-6 text-primary" />
-                <h3 className="text-xl font-semibold font-['Outfit']">
-                  {category}
-                </h3>
-              </div>
-
-              <p className="text-muted-foreground text-sm">
-                Explorar listas de {category}
-              </p>
+              {CATEGORY_IMAGES[cat] ? (
+                <img
+                  src={CATEGORY_IMAGES[cat]}
+                  alt={cat}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <span className="absolute bottom-3 left-4 text-white font-semibold text-base font-['Outfit'] drop-shadow">
+                {cat}
+              </span>
             </Link>
           ))}
         </div>
-      )}
+      </div>
+
+      {/* Destacadas */}
+      <div>
+        <div className="flex items-center gap-2 mb-6">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <h2 className="text-2xl font-bold font-['Outfit'] text-foreground">BagLists Destacadas</h2>
+        </div>
+        {loadingFeatured ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : featured.length === 0 ? (
+          <p className="text-muted-foreground text-sm py-8">No hay BagLists destacadas todavía.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featured.map(baglist => (
+              <BagListCard key={baglist.id} baglist={baglist} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
