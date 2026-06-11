@@ -27,7 +27,12 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
+    let res;
+    try {
+      res = await api.post('/auth/login', { email, password });
+    } catch (err) {
+      throw err;
+    }
     localStorage.setItem('liser_token', res.data.token);
     setToken(res.data.token);
     setUser(res.data.user);
