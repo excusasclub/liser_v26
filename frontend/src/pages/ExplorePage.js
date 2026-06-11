@@ -61,15 +61,12 @@ export default function ExplorePage() {
           }}
         />
         <div className="relative max-w-3xl mx-auto px-4 py-16 sm:py-24 text-center">
-          <p className="text-xs font-semibold tracking-[0.25em] uppercase text-primary mb-4 font-['Outfit']">
-            Recomendaciones que importan
-          </p>
           <h1 className="text-4xl sm:text-6xl font-extrabold font-['Outfit'] text-foreground leading-tight mb-6">
-            Los productos que usa<br />
-            <span className="text-primary">la gente de verdad</span>
+            Encuentra lo que usan<br />
+            <span className="text-primary">tus creadores favoritos</span>
           </h1>
           <p className="text-muted-foreground text-lg mb-10 max-w-xl mx-auto">
-            Listas curadas por creadores. Lo que realmente compran, usan y recomiendan.
+            Lo que usan, lo que compran, lo que de verdad recomiendan
           </p>
           <form onSubmit={handleSearch} className="relative max-w-lg mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
