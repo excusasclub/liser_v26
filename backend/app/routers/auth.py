@@ -74,8 +74,8 @@ async def login(request: Request, data: UserLogin):
         {"$or": [{"email": identifier}, {"username": identifier.lower()}]},
         {"_id": 0}
     )
-    if not user or not user.get("password_hash") or not verify_password(data.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos. Prueba a entrar con Google o usa '¿Olvidaste tu contraseña?'")
     await db.users.update_one({"id": user["id"]}, {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}})
     token = create_token(user["id"])
     return {
