@@ -1,0 +1,25 @@
+# Liser
+
+Liser es una plataforma española donde creadores y microinfluencers publican BagLists: listas curadas de productos recomendados con enlaces de afiliado.
+
+## Qué es una BagList
+
+Una BagList es una lista de productos recomendados por un creador real. Cada producto incluye nombre, descripción, precio orientativo y enlace directo al producto. Las BagLists están organizadas por categorías: Tech, Fashion, Hogar, Belleza, Deportes, Cocina, Viajes, Libros, Gaming, Lifestyle y Otros.
+
+## Contenido indexado
+
+Solo están indexadas las BagLists públicas. Cada BagList tiene una URL permanente con el formato:
+https://liser.es/{username}/{slug}
+
+## Explorar
+
+Puedes explorar todas las categorías en:
+https://liser.es/explore
+
+## Sitemap
+
+https://liser.es/sitemap.xml
+
+## Contacto
+
+https://liser.es/legal/contacto

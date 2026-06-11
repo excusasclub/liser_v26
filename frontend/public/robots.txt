@@ -1,9 +1,16 @@
 User-agent: *
-Allow: /
+Disallow: /
+Allow: /*/*
+Allow: /explore
+
 Disallow: /dashboard
 Disallow: /saved
 Disallow: /create
 Disallow: /edit/
 Disallow: /settings/
+Disallow: /admin
+Disallow: /auth
+Disallow: /analytics
+Disallow: /legal/
 
 Sitemap: https://liser.es/sitemap.xml

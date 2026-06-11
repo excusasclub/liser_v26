@@ -56,13 +56,10 @@ async def get_sitemap():
         {"is_public": True, "slug": {"$exists": True}},
         {"_id": 0, "slug": 1, "username": 1, "updated_at": 1}
     ).to_list(5000)
-    users = await db.users.find({}, {"_id": 0, "username": 1}).to_list(1000)
+    users = []
     urls = [
-        "<url><loc>https://liser.es/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>",
-        "<url><loc>https://liser.es/explore</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>",
+        "<url><loc>https://liser.es/explore</loc><changefreq>daily</changefreq><priority>0.9</priority></url>",
     ]
-    for u in users:
-        urls.append(f"<url><loc>https://liser.es/{u['username']}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
     for b in baglists:
         if b.get("slug") and b.get("username"):
             lastmod = b.get("updated_at", "")[:10]
