@@ -70,7 +70,7 @@ export function Navbar() {
               </Button>
               {user ? (
                 <>
-                  <Link to="/create" data-testid="nav-create">
+                  <Link to="/create" data-testid="nav-create" className="hidden md:block">
                     <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 neon-glow">
                       <Plus className="w-4 h-4" /> Nueva BagList
                     </Button>
@@ -93,15 +93,19 @@ export function Navbar() {
                       <DropdownMenuItem onClick={() => navigate('/settings/profile')} className="cursor-pointer gap-2">
                         <Settings className="w-4 h-4" /> Editar Perfil
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer gap-2 md:hidden">
-                        <LayoutDashboard className="w-4 h-4" /> Mis Listas
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/saved')} className="cursor-pointer gap-2 md:hidden">
-                        <Bookmark className="w-4 h-4" /> Guardados
+                      {user.role === 'admin' && (
+                        <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer gap-2">
+                          <ShieldAlert className="w-4 h-4" /> Admin
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer gap-2">
+                        {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        {theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem data-testid="menu-logout" onClick={logout} className="cursor-pointer gap-2 text-destructive">
-                        <LogOut className="w-4 h-4" /> Cerrar Sesion
+                        <LogOut className="w-4 h-4" /> Cerrar Sesión
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -143,15 +147,6 @@ export function Navbar() {
                 <BarChart2 className="w-5 h-5" />
                 <span className="text-xs">Analíticas</span>
               </Link>
-              <Link to={`/user/${user.username}`} className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isActive(`/user/${user.username}`) ? 'text-primary' : 'text-muted-foreground'}`}>
-                <Avatar className="w-6 h-6">
-                  <AvatarImage src={user.avatar_url} alt={user.display_name} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
-                    {user.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-xs">Perfil</span>
-              </Link>
             </>
           ) : (
             <Link to="/auth" className="flex flex-col items-center gap-1 px-3 py-2 text-muted-foreground">
@@ -159,10 +154,6 @@ export function Navbar() {
               <span className="text-xs">Entrar</span>
             </Link>
           )}
-          <button onClick={toggleTheme} className="flex flex-col items-center gap-1 px-3 py-2 text-muted-foreground">
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            <span className="text-xs">Tema</span>
-          </button>
         </div>
       </div>
     </>
