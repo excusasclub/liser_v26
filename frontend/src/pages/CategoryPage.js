@@ -7,12 +7,10 @@ import { toast } from 'sonner';
 
 export default function CategoryPage() {
     const { slug } = useParams();
-
+    const navigate = useNavigate();
     const [baglists, setBaglists] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const navigate = useNavigate();
-    decodeURIComponent(slug).charAt(0).toUpperCase() +
+    const category = decodeURIComponent(slug).charAt(0).toUpperCase() +
         decodeURIComponent(slug).slice(1);
 
     useEffect(() => {
