@@ -44,6 +44,11 @@ app.include_router(upload.router, prefix="/api")
 app.include_router(plans.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
+from app.database import create_indexes
+
+@app.on_event("startup")
+async def startup_event():
+    await create_indexes()
 @app.get("/api/categories")
 async def get_categories():
     return CATEGORIES
