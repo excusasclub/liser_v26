@@ -124,19 +124,26 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.liser.es")
 
 @router.get("/google")
 async def google_login():
+    state = secrets.token_urlsafe(16)
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "redirect_uri": GOOGLE_REDIRECT_URI,
         "response_type": "code",
         "scope": "openid email profile",
         "access_type": "offline",
+        "state": state,
     }
     from urllib.parse import urlencode
     url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
-    return RedirectResponse(url)
+    response = RedirectResponse(url)
+    response.set_cookie("oauth_state", state, max_age=300, httponly=True, samesite="lax")
+    return response
 
 @router.get("/google/callback")
-async def google_callback(code: str):
+async def google_callback(code: str, state: str = "", request: Request = None):
+    stored_state = request.cookies.get("oauth_state", "") if request else ""
+    if not stored_state or stored_state != state:
+        return RedirectResponse(f"{FRONTEND_URL}/auth?error=invalid_state")
     async with httpx.AsyncClient() as client:
         token_res = await client.post("https://oauth2.googleapis.com/token", data={
             "code": code,

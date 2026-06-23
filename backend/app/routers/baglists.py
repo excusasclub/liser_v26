@@ -270,7 +270,8 @@ async def toggle_save(baglist_id: str, user=Depends(get_required_user)):
     return {"saved": True}
 
 @router.post("/{baglist_id}/follow")
-async def follow_baglist(baglist_id: str, data: FollowerCapture):
+@limiter.limit("5/minute")
+async def follow_baglist(request: Request, baglist_id: str, data: FollowerCapture):
     existing = await db.followers.find_one({"email": data.email, "baglist_id": baglist_id})
     if not existing:
         await db.followers.insert_one({"id": str(uuid.uuid4()), "email": data.email, "baglist_id": baglist_id, "created_at": datetime.now(timezone.utc).isoformat()})
