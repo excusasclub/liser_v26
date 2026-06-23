@@ -1,4 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 from app.dependencies import get_required_user
 import cloudinary
 import cloudinary.uploader
@@ -16,7 +20,8 @@ cloudinary.config(
 router = APIRouter(prefix="/upload")
 
 @router.post("/image")
-async def upload_image_file(file: UploadFile = File(...), type: str = "product", user=Depends(get_required_user)):
+@limiter.limit("10/minute")
+async def upload_image_file(request: Request, file: UploadFile = File(...), type: str = "product", user=Depends(get_required_user)):
     if not file:
         raise HTTPException(status_code=400, detail="No file provided")
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
