@@ -117,6 +117,30 @@ async def update_me(data: UserUpdate, user=Depends(get_required_user)):
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
     return updated
 
+@router.put("/me/email")
+async def update_email(data: dict, user=Depends(get_required_user)):
+    new_email = data.get("email", "").strip().lower()
+    if not new_email or "@" not in new_email:
+        raise HTTPException(status_code=400, detail="Email no válido")
+    existing = await db.users.find_one({"email": new_email})
+    if existing and existing["id"] != user["id"]:
+        raise HTTPException(status_code=400, detail="Ese email ya está en uso")
+    await db.users.update_one({"id": user["id"]}, {"$set": {"email": new_email}})
+    return {"ok": True}
+
+@router.put("/me/password")
+async def update_password(data: dict, user=Depends(get_required_user)):
+    current = data.get("current_password", "")
+    new_password = data.get("new_password", "")
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Mínimo 8 caracteres")
+    db_user = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if not db_user.get("password_hash"):
+        raise HTTPException(status_code=400, detail="Esta cuenta usa Google. Usa 'olvidé mi contraseña' para establecer una.")
+    if not verify_password(current, db_user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Contraseña actual incorrecta")
+    await db.users.update_one({"id": user["id"]}, {"$set": {"password_hash": hash_password(new_password)}})
+    return {"ok": True}
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "https://api.liser.es/api/auth/google/callback")
