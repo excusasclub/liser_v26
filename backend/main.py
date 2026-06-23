@@ -76,6 +76,44 @@ async def get_sitemap():
 async def get_sitemap_xml():
     return await get_sitemap()
 
+@app.get("/render/explore")
+async def prerender_explore():
+    from app.database import db
+    from fastapi.responses import HTMLResponse
+    import json
+    from app.config import CATEGORIES
+    baglists = await db.baglists.find(
+        {"is_public": True, "featured": True},
+        {"_id": 0, "title": 1, "slug": 1, "username": 1, "description": 1}
+    ).to_list(6)
+    items_html = "".join(
+        "<h2>" + b.get("title", "") + "</h2><p>" + (b.get("description") or "") + "</p>"
+        for b in baglists
+    )
+    cats_html = "".join("<li>" + c + "</li>" for c in CATEGORIES)
+    json_ld = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Explorar BagLists — Liser",
+        "description": "Descubre listas de productos recomendados por creadores reales, organizadas por categorías.",
+        "url": "https://liser.es/explore"
+    }
+    json_ld_str = json.dumps(json_ld, ensure_ascii=False)
+    html = (
+        "<!DOCTYPE html><html lang='es'><head>"
+        "<meta charset='UTF-8'>"
+        "<title>Explorar BagLists — Liser</title>"
+        "<meta name='description' content='Descubre listas de productos recomendados por creadores reales, organizadas por categorías.'>"
+        "<link rel='canonical' href='https://liser.es/explore'>"
+        "<script type='application/ld+json'>" + json_ld_str + "</script>"
+        "</head><body>"
+        "<h1>Explorar BagLists</h1>"
+        "<ul>" + cats_html + "</ul>"
+        + items_html +
+        "</body></html>"
+    )
+    return HTMLResponse(content=html)
+
 @app.get("/render/{username}/{slug}")
 async def prerender_baglist(username: str, slug: str):
     from app.database import db
