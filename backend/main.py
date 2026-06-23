@@ -82,15 +82,16 @@ async def prerender_explore():
     from fastapi.responses import HTMLResponse
     import json
     from app.config import CATEGORIES
+    def esc(s): return (s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
     baglists = await db.baglists.find(
         {"is_public": True, "featured": True},
         {"_id": 0, "title": 1, "slug": 1, "username": 1, "description": 1}
     ).to_list(6)
     items_html = "".join(
-        "<h2>" + b.get("title", "") + "</h2><p>" + (b.get("description") or "") + "</p>"
+        "<h2>" + esc(b.get("title", "")) + "</h2><p>" + esc(b.get("description")) + "</p>"
         for b in baglists
     )
-    cats_html = "".join("<li>" + c + "</li>" for c in CATEGORIES)
+    cats_html = "".join("<li>" + esc(c) + "</li>" for c in CATEGORIES)
     json_ld = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -130,12 +131,13 @@ async def prerender_baglist(username: str, slug: str):
     url = "https://liser.es/" + username + "/" + slug
     products = baglist.get('products', [])
 
+    def esc(s): return (s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
     product_html = "".join(
-        "<h2>" + p.get('name', '') + "</h2><p>" + p.get('description', '') + "</p>"
+        "<h2>" + esc(p.get('name')) + "</h2><p>" + esc(p.get('description')) + "</p>"
         for p in products
     )
-    og_image = "<meta property='og:image' content='" + image + "'>" if image else ""
-    tw_image = "<meta name='twitter:image' content='" + image + "'>" if image else ""
+    og_image = "<meta property='og:image' content='" + esc(image) + "'>" if image else ""
+    tw_image = "<meta name='twitter:image' content='" + esc(image) + "'>" if image else ""
 
     json_ld = {
         "@context": "https://schema.org",
@@ -165,13 +167,13 @@ async def prerender_baglist(username: str, slug: str):
     html = (
         "<!DOCTYPE html><html lang='es'><head>"
         "<meta charset='UTF-8'>"
-        "<title>" + title + "</title>"
-        "<meta name='description' content='" + description + "'>"
-        "<link rel='canonical' href='" + url + "'>"
-        "<meta property='og:title' content='" + title + "'>"
-        "<meta property='og:description' content='" + description + "'>"
+        "<title>" + esc(title) + "</title>"
+        "<meta name='description' content='" + esc(description) + "'>"
+        "<link rel='canonical' href='" + esc(url) + "'>"
+        "<meta property='og:title' content='" + esc(title) + "'>"
+        "<meta property='og:description' content='" + esc(description) + "'>"
         "<meta property='og:type' content='website'>"
-        "<meta property='og:url' content='" + url + "'>"
+        "<meta property='og:url' content='" + esc(url) + "'>"
         + og_image +
         "<meta name='twitter:card' content='summary_large_image'>"
         "<meta name='twitter:title' content='" + title + "'>"
