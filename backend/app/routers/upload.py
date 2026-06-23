@@ -25,6 +25,14 @@ async def upload_image_file(file: UploadFile = File(...), type: str = "product",
     if file.size and file.size > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="La imagen no puede superar 5MB")
     contents = await file.read()
+    magic_bytes = {
+        b'\xff\xd8\xff': 'image/jpeg',
+        b'\x89PNG': 'image/png',
+        b'RIFF': 'image/webp',
+        b'GIF8': 'image/gif',
+    }
+    if not any(contents.startswith(sig) for sig in magic_bytes):
+        raise HTTPException(status_code=400, detail="Archivo no válido")
     try:
         transformations = {
             "avatar": [{"width": 400, "height": 400, "crop": "pad", "gravity": "face"}, {"quality": "auto"}],
