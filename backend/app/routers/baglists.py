@@ -224,9 +224,11 @@ async def update_product(baglist_id: str, product_id: str, data: ProductCreate, 
 
 @router.post("/{baglist_id}/products/{product_id}/duplicate")
 async def duplicate_product(baglist_id: str, product_id: str, data: DuplicateProductRequest, user=Depends(get_required_user)):
-    source = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "products": 1})
+    source = await db.baglists.find_one({"id": baglist_id}, {"_id": 0, "products": 1, "user_id": 1, "is_public": 1})
     if not source:
         raise HTTPException(status_code=404, detail="BagList origen no encontrada")
+    if source.get("user_id") != user["id"] and not source.get("is_public", False):
+        raise HTTPException(status_code=403, detail="No tienes permiso para copiar de esta lista")
     product = next((p for p in source.get("products", []) if p["id"] == product_id), None)
     if not product:
         raise HTTPException(status_code=404, detail="Producto no encontrado")

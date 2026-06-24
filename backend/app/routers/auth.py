@@ -12,8 +12,7 @@ import httpx
 import os
 import re
 import secrets
-from app.services.resend_service import send_welcome, send_reset_password, send_verification_email
-
+from app.services.resend_service import send_welcome, send_reset_password, send_verification_email, send_change_email
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/auth")
@@ -74,8 +73,12 @@ async def login(request: Request, data: UserLogin):
         {"$or": [{"email": identifier}, {"username": identifier.lower()}]},
         {"_id": 0}
     )
+    if not user:
+        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
     if not user.get("password_hash"):
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos. Prueba a entrar con Google o usa '¿Olvidaste tu contraseña?'")
+    if not verify_password(data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
     await db.users.update_one({"id": user["id"]}, {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}})
     token = create_token(user["id"])
     return {
@@ -120,13 +123,35 @@ async def update_me(data: UserUpdate, user=Depends(get_required_user)):
 @router.put("/me/email")
 async def update_email(data: dict, user=Depends(get_required_user)):
     new_email = data.get("email", "").strip().lower()
-    if not new_email or "@" not in new_email:
+    if not new_email or "@" not in new_email or len(new_email) > 254:
         raise HTTPException(status_code=400, detail="Email no válido")
+    if new_email == user["email"]:
+        raise HTTPException(status_code=400, detail="Es el mismo email que ya tienes")
     existing = await db.users.find_one({"email": new_email})
-    if existing and existing["id"] != user["id"]:
+    if existing:
         raise HTTPException(status_code=400, detail="Ese email ya está en uso")
-    await db.users.update_one({"id": user["id"]}, {"$set": {"email": new_email}})
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc).timestamp() + 3600
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "pending_email": new_email,
+        "email_change_token": token,
+        "email_change_expires": expires_at
+    }})
+    await send_change_email(user["email"], new_email, user["username"], token)
     return {"ok": True}
+
+@router.get("/confirm-email-change")
+async def confirm_email_change(token: str):
+    user = await db.users.find_one({"email_change_token": token}, {"_id": 0})
+    if not user:
+        return RedirectResponse(f"{FRONTEND_URL}/settings/profile?error=invalid_token")
+    if datetime.now(timezone.utc).timestamp() > user.get("email_change_expires", 0):
+        return RedirectResponse(f"{FRONTEND_URL}/settings/profile?error=token_expired")
+    await db.users.update_one({"email_change_token": token}, {
+        "$set": {"email": user["pending_email"]},
+        "$unset": {"pending_email": "", "email_change_token": "", "email_change_expires": ""}
+    })
+    return RedirectResponse(f"{FRONTEND_URL}/settings/profile?email_changed=1")
 
 @router.put("/me/password")
 async def update_password(data: dict, user=Depends(get_required_user)):
@@ -134,6 +159,12 @@ async def update_password(data: dict, user=Depends(get_required_user)):
     new_password = data.get("new_password", "")
     if len(new_password) < 8:
         raise HTTPException(status_code=400, detail="Mínimo 8 caracteres")
+    if not re.search(r'[A-Z]', new_password):
+        raise HTTPException(status_code=400, detail="La contraseña debe contener al menos una mayúscula")
+    if not re.search(r'[0-9]', new_password):
+        raise HTTPException(status_code=400, detail="La contraseña debe contener al menos un número")
+    if len(new_password) > 100:
+        raise HTTPException(status_code=400, detail="Contraseña demasiado larga")
     db_user = await db.users.find_one({"id": user["id"]}, {"_id": 0})
     if not db_user.get("password_hash"):
         raise HTTPException(status_code=400, detail="Esta cuenta usa Google. Usa 'olvidé mi contraseña' para establecer una.")

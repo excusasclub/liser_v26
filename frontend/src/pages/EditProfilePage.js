@@ -44,7 +44,7 @@ export default function EditProfilePage() {
         setSavingEmail(true);
         try {
             await api.put('/auth/me/email', emailForm);
-            toast.success('Email actualizado');
+            toast.success('Te hemos enviado un email de confirmación al nuevo correo');
         } catch (err) {
             toast.error(err.response?.data?.detail || 'Error al actualizar email');
         } finally { setSavingEmail(false); }

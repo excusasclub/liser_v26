@@ -58,10 +58,23 @@ async def get_user_analytics(user=Depends(get_required_user)):
 
 @router.get("/{username}")
 async def get_user_profile(username: str, user=Depends(get_optional_user)):
-    profile = await db.users.find_one({"username": username}, {"_id": 0, "password_hash": 0})
-    if not profile:
+    raw = await db.users.find_one({"username": username}, {"_id": 0})
+    if not raw:
         raise HTTPException(status_code=404, detail="User not found")
-    is_own_profile = user and user["id"] == profile["id"]
+    is_own_profile = user and user["id"] == raw["id"]
+    profile = {
+        "id": raw["id"],
+        "username": raw["username"],
+        "display_name": raw.get("display_name", ""),
+        "bio": raw.get("bio", ""),
+        "avatar_url": raw.get("avatar_url", ""),
+    }
+    if is_own_profile:
+        profile["email"] = raw.get("email", "")
+        profile["plan"] = raw.get("plan", "free")
+        profile["role"] = raw.get("role", "user")
+        profile["email_verified"] = raw.get("email_verified", False)
+        profile["created_at"] = raw.get("created_at", "")
     query = {"user_id": profile["id"]} if is_own_profile else {"user_id": profile["id"], "is_public": True}
     baglists = await db.baglists.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     for b in baglists:
