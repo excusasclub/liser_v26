@@ -215,7 +215,7 @@ export default function BagListDetailPage() {
             <Link to={`/user/${baglist.username}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
               <Avatar className="w-6 h-6">
                 <AvatarImage src={baglist.avatar_url} alt={baglist.display_name} />
-                <AvatarFallback className="bg-primary/20 text-primary text-xs">{baglist.display_name?.charAt(0)?.toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-primary/20 text-primary text-xs">{baglist.display_name?.replace(/^@/, '')?.charAt(0)?.toUpperCase()}</AvatarFallback>
               </Avatar>
               <span>{baglist.display_name?.replace(/^@/, '')}</span>
               <span className="text-muted-foreground/50">@{baglist.username}</span>
