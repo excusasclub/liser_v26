@@ -217,7 +217,7 @@ export default function BagListDetailPage() {
                 <AvatarImage src={baglist.avatar_url} alt={baglist.display_name} />
                 <AvatarFallback className="bg-primary/20 text-primary text-xs">{baglist.display_name?.charAt(0)?.toUpperCase()}</AvatarFallback>
               </Avatar>
-              <span>{baglist.display_name}</span>
+              <span>{baglist.display_name?.replace(/^@/, '')}</span>
               <span className="text-muted-foreground/50">@{baglist.username}</span>
             </Link>
           </div>

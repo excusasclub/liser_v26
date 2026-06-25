@@ -40,7 +40,7 @@ async def upload_image_file(request: Request, file: UploadFile = File(...), type
         raise HTTPException(status_code=400, detail="Archivo no válido")
     try:
         transformations = {
-            "avatar": [{"width": 400, "height": 400, "crop": "pad", "gravity": "face"}, {"quality": "auto"}],
+            "avatar": [{"width": 400, "height": 400, "crop": "fill", "gravity": "face"}, {"quality": "auto"}],
             "cover": [{"width": 1200, "height": 630, "crop": "pad"}, {"quality": "auto"}],
             "product": [{"width": 800, "height": 800, "crop": "pad", "background": "auto"}, {"quality": "auto"}],
         }

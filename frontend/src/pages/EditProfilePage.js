@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 export default function EditProfilePage() {
     const { user, setUser, logout } = useAuth();
+    React.useEffect(() => { if (!user) navigate('/'); }, [user, navigate]);
     const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
     const [emailForm, setEmailForm] = useState({ email: user?.email || '' });
