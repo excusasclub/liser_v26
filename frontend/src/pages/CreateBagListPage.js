@@ -47,8 +47,14 @@ export default function CreateBagListPage() {
   const [productForm, setProductForm] = useState({
     name: '', image_url: '', price: '', currency: 'EUR', link: '', description: '', discount_code: '', custom_fields: [], social_links: []
   });
-
   useEffect(() => {
+    if (!id) {
+      setForm({ title: '', description: '', category: '', tags: [], is_public: true, cover_image_url: '' });
+      setProducts([]);
+    }
+  }, [id]);
+  useEffect(() => {
+    if (!user) navigate('/');
     api.get('/categories').then(res => setCategories(res.data));
     if (isEditing) {
       setLoading(true);
