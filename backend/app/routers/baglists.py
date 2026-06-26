@@ -29,6 +29,7 @@ async def create_baglist(data: BagListCreate, user=Depends(get_verified_user)):
     doc = {
         "id": baglist_id,
         "user_id": user["id"],
+        "username": user["username"],
         "title": data.title,
         "description": data.description or "",
         "category": data.category or "Other",
