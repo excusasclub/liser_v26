@@ -1,7 +1,7 @@
 User-agent: *
-Disallow: /
 Allow: /*/*
 Allow: /explore
+Allow: /sitemap.xml
 
 Disallow: /dashboard
 Disallow: /saved
