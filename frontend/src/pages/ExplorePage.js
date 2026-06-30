@@ -6,17 +6,17 @@ import api from '../lib/api';
 import { Helmet } from 'react-helmet-async';
 
 const CATEGORIES = [
-  { name: 'Tech', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913221/tech_no_watermark_imv8mi.png' },
-  { name: 'Fashion', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913223/fashion_no_watermark_uc86hn.png' },
-  { name: 'Hogar', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913218/hogar_no_watermark_mc35sd.png' },
-  { name: 'Belleza', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913220/belleza_no_watermark_bfiegs.png' },
-  { name: 'Deportes', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913218/deportes_no_watermark_cnxcge.png' },
-  { name: 'Cocina', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913218/cocina_no_watermark_bedgmw.png' },
-  { name: 'Viajes', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913223/viaje_no_watermark_ijeked.png' },
-  { name: 'Libros', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913219/libros_no_watermark_mfel44.png' },
-  { name: 'Gaming', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913220/gaming_no_watermark_lgxpdm.png' },
-  { name: 'Lifestyle', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913220/lifestyle_no_watermark_smarcs.png' },
-  { name: 'Otros', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/v1780913221/otros_no_watermark_g4sxqs.png' },
+  { name: 'Tech', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913221/tech_no_watermark_imv8mi.png' },
+  { name: 'Fashion', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913223/fashion_no_watermark_uc86hn.png' },
+  { name: 'Hogar', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913218/hogar_no_watermark_mc35sd.png' },
+  { name: 'Belleza', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913220/belleza_no_watermark_bfiegs.png' },
+  { name: 'Deportes', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913218/deportes_no_watermark_cnxcge.png' },
+  { name: 'Cocina', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913218/cocina_no_watermark_bedgmw.png' },
+  { name: 'Viajes', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913223/viaje_no_watermark_ijeked.png' },
+  { name: 'Libros', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913219/libros_no_watermark_mfel44.png' },
+  { name: 'Gaming', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913220/gaming_no_watermark_lgxpdm.png' },
+  { name: 'Lifestyle', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913220/lifestyle_no_watermark_smarcs.png' },
+  { name: 'Otros', image: 'https://res.cloudinary.com/de8fcizbx/image/upload/f_auto,q_auto,w_400/v1780913221/otros_no_watermark_g4sxqs.png' },
 ];
 
 export default function ExplorePage() {
