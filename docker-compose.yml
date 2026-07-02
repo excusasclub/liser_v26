@@ -2,6 +2,11 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: liser_admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
     container_name: liser_mongo
     restart: unless-stopped
     volumes:
