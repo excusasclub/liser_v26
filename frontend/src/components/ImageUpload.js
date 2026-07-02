@@ -61,7 +61,7 @@ export function ImageUpload({ value, onChange, placeholder = "Subir imagen", cla
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 className="hidden"
-                onChange={(e) => handleFile(e.target.files?.[0])}
+                onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ''; }}
             />
             {value && (
                 <img src={value} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-border/50" />
