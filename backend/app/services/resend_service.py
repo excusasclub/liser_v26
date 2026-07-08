@@ -3,6 +3,7 @@ import httpx
 from datetime import datetime, timezone
 from app.database import db
 import uuid
+import html
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "Liser <hello@liser.es>")
@@ -40,6 +41,7 @@ async def send_email(to: str, subject: str, html: str, type: str = "generic") ->
 
 
 def welcome_html(username: str) -> str:
+    safe_username = html.escape(username)
     return f"""
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#0a0a0a;color:#fff;border-radius:12px">
       <div style="text-align:center;margin-bottom:32px">
@@ -47,7 +49,7 @@ def welcome_html(username: str) -> str:
           <span style="color:#fff;font-weight:bold;font-size:20px">L</span>
         </div>
       </div>
-      <h1 style="font-size:24px;margin-bottom:16px">Bienvenido a Liser, {username} 👋</h1>
+      <h1 style="font-size:24px;margin-bottom:16px">Bienvenido a Liser, {safe_username} 👋</h1>
       <p style="color:#a1a1aa;line-height:1.6">Ya puedes crear tus primeras BagLists y compartir tus productos favoritos con el mundo.</p>
       <div style="margin:32px 0;text-align:center">
         <a href="{FRONTEND_URL}/dashboard" style="background:#22c55e;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600">Ir a mi dashboard</a>
@@ -58,6 +60,7 @@ def welcome_html(username: str) -> str:
 
 
 def reset_password_html(username: str, reset_url: str) -> str:
+    safe_username = html.escape(username)
     return f"""
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#0a0a0a;color:#fff;border-radius:12px">
       <div style="text-align:center;margin-bottom:32px">
@@ -76,6 +79,8 @@ def reset_password_html(username: str, reset_url: str) -> str:
 
 
 def follower_notification_html(username: str, baglist_title: str, baglist_url: str) -> str:
+    safe_username = html.escape(username)
+    safe_baglist_title = html.escape(baglist_title)
     return f"""
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#0a0a0a;color:#fff;border-radius:12px">
       <div style="text-align:center;margin-bottom:32px">
@@ -107,6 +112,7 @@ async def send_follower_notification(email: str, username: str, baglist_title: s
     return await send_email(email, f"'{baglist_title}' se ha actualizado", follower_notification_html(username, baglist_title, baglist_url), type="follower_notification")
 
 def verification_email_html(username: str, verify_url: str) -> str:
+    safe_username = html.escape(username)
     return f"""
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#0a0a0a;color:#fff;border-radius:12px">
       <div style="text-align:center;margin-bottom:32px">
@@ -124,6 +130,8 @@ def verification_email_html(username: str, verify_url: str) -> str:
     """
 
 def change_email_html(username: str, verify_url: str, new_email: str) -> str:
+    safe_username = html.escape(username)
+    safe_new_email = html.escape(new_email)
     return f"""
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#0a0a0a;color:#fff;border-radius:12px">
       <div style="text-align:center;margin-bottom:32px">

@@ -122,10 +122,14 @@ async def admin_analytics(admin=Depends(get_required_admin)):
     total_baglists = await db.baglists.count_documents({})
     public_baglists = await db.baglists.count_documents({"is_public": True})
 
-    # Clics totales
-    click_pipeline = [{"$group": {"_id": None, "total": {"$sum": "$total_clicks"}}}]
-    click_result = await db.baglists.aggregate(click_pipeline).to_list(1)
-    total_clicks = click_result[0]["total"] if click_result else 0
+    # Clics totales y por categoría (los clics viven en la colección "clicks", no en baglists)
+    baglists_meta = await db.baglists.find({}, {"_id": 0, "id": 1, "category": 1}).to_list(100000)
+    click_counts = await db.clicks.aggregate([
+        {"$match": {"$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
+        {"$group": {"_id": "$baglist_id", "clicks": {"$sum": 1}}}
+    ]).to_list(100000)
+    clicks_by_baglist = {c["_id"]: c["clicks"] for c in click_counts}
+    total_clicks = sum(clicks_by_baglist.values())
 
     # Emails capturados
     total_followers = await db.followers.count_documents({})
@@ -149,11 +153,16 @@ async def admin_analytics(admin=Depends(get_required_admin)):
     })
 
     # Clics por categoría
-    category_pipeline = [
-        {"$group": {"_id": "$category", "clicks": {"$sum": "$total_clicks"}, "count": {"$sum": 1}}},
-        {"$sort": {"clicks": -1}}
-    ]
-    categories = await db.baglists.aggregate(category_pipeline).to_list(20)
+    category_totals = {}
+    for b in baglists_meta:
+        cat = b.get("category") or "Other"
+        entry = category_totals.setdefault(cat, {"clicks": 0, "count": 0})
+        entry["clicks"] += clicks_by_baglist.get(b["id"], 0)
+        entry["count"] += 1
+    categories = sorted(
+        [{"category": cat, "clicks": v["clicks"], "count": v["count"]} for cat, v in category_totals.items()],
+        key=lambda x: x["clicks"], reverse=True
+    )
 
     return {
         "total_users": total_users,
@@ -164,7 +173,7 @@ async def admin_analytics(admin=Depends(get_required_admin)):
         "total_followers": total_followers,
         "users_per_day": days,
         "inactive_baglists": inactive_baglists,
-        "categories": [{"category": c["_id"] or "Other", "clicks": c["clicks"], "count": c["count"]} for c in categories],
+        "categories": categories,
     }
 
 
@@ -224,13 +233,27 @@ async def admin_emails(
     return {"emails": emails, "total": total, "page": page, "pages": -(-total // limit)}
 
 
-@router.post("/emails/resend-welcome/{user_id}")
-async def admin_resend_welcome(user_id: str, admin=Depends(get_required_admin)):
-    from app.services.resend_service import send_welcome
+@router.post("/emails/send-to-user/{user_id}")
+async def admin_send_email_to_user(user_id: str, body: dict, admin=Depends(get_required_admin)):
+    from app.services.resend_service import send_email
+    template = body.get("template")
+    custom_subject = body.get("subject")
+    custom_html = body.get("html")
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    result = await send_welcome(user["email"], user["username"])
+    
+    if template == "welcome":
+        from app.services.resend_service import welcome_html
+        subject = "Bienvenido a Liser"
+        html = welcome_html(user["username"])
+    elif template == "custom" and custom_subject and custom_html:
+        subject = custom_subject
+        html = custom_html
+    else:
+        raise HTTPException(status_code=400, detail="Template o contenido inválido")
+    
+    result = await send_email(user["email"], subject, html, type="admin_send")
     return result
 
 

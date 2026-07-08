@@ -200,7 +200,7 @@ export default function BagListDetailPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
               {baglist.category && baglist.category !== 'Otros' && (
                 <Badge className="bg-primary/20 text-primary border-0">{baglist.category}</Badge>
               )}

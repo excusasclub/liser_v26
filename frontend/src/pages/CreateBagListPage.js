@@ -88,7 +88,7 @@ export default function CreateBagListPage() {
 
   const addTag = () => {
     const tag = tagInput.trim();
-    if (tag && !form.tags.includes(tag) && form.tags.length < 10) {
+    if (tag && !form.tags.includes(tag) && form.tags.length < 4) {
       setForm({ ...form, tags: [...form.tags, tag] });
       setTagInput('');
     }

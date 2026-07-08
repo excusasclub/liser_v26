@@ -33,6 +33,10 @@ export default function AdminPage() {
     const [emailTotal, setEmailTotal] = useState(0);
     const [broadcastSubject, setBroadcastSubject] = useState('');
     const [broadcastHtml, setBroadcastHtml] = useState('');
+    const [emailModal, setEmailModal] = useState(null);
+    const [emailModalTemplate, setEmailModalTemplate] = useState('welcome');
+    const [emailModalSubject, setEmailModalSubject] = useState('');
+    const [emailModalHtml, setEmailModalHtml] = useState('');
 
     useEffect(() => {
         if (!user || user.role !== 'admin') navigate('/dashboard');
@@ -84,9 +88,23 @@ export default function AdminPage() {
         setEmailTotal(res.data.total);
     }
 
-    async function resendWelcome(userId) {
-        await api.post(`/admin/emails/resend-welcome/${userId}`);
-        toast.success('Email de bienvenida enviado');
+    async function openEmailModal(userId) {
+        setEmailModal(userId);
+        setEmailModalTemplate('welcome');
+        setEmailModalSubject('');
+        setEmailModalHtml('');
+    }
+
+    async function sendEmailToUser() {
+        if (!emailModal) return;
+        const body = {
+            template: emailModalTemplate,
+            subject: emailModalSubject,
+            html: emailModalHtml
+        };
+        await api.post(`/admin/emails/send-to-user/${emailModal}`, body);
+        toast.success('Email enviado');
+        setEmailModal(null);
     }
 
     async function notifyFollowers(baglistId) {
@@ -219,7 +237,7 @@ export default function AdminPage() {
                             <Button variant="outline" size="sm" onClick={() => loadUsers(userSearch, 1)}>Buscar</Button>
                         </div>
                         <div className="text-xs text-muted-foreground">{userTotal} usuarios</div>
-                        <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="rounded-lg border border-border overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50">
                                     <tr className="text-left text-muted-foreground">
@@ -244,9 +262,9 @@ export default function AdminPage() {
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-1 flex-wrap">
                                                     {['free', 'pro', 'premium'].filter(p => p !== u.plan).map(p => (
-                                                        <Button key={p} size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => setPlan(u.id, p)}>{p}</Button>
+                                                        <Button key={p} size="sm" variant="outline" className="h-6 w-16 text-xs px-2" onClick={() => setPlan(u.id, p)}>{p}</Button>
                                                     ))}
-                                                    <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => resendWelcome(u.id)}>✉</Button>
+                                                    <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => openEmailModal(u.id)}>✉</Button>
                                                     <Button size="sm" variant={u.suspended ? 'default' : 'destructive'} className="h-6 text-xs px-2" onClick={() => setSuspended(u.id, !u.suspended)}>
                                                         {u.suspended ? 'Reactivar' : 'Suspender'}
                                                     </Button>
@@ -269,7 +287,7 @@ export default function AdminPage() {
                             <Button variant="outline" size="sm" onClick={() => loadBaglists(baglistSearch, 1)}>Buscar</Button>
                         </div>
                         <div className="text-xs text-muted-foreground">{baglistTotal} BagLists</div>
-                        <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="rounded-lg border border-border overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50">
                                     <tr className="text-left text-muted-foreground">
@@ -326,7 +344,7 @@ export default function AdminPage() {
                                 <Button size="sm" onClick={sendBroadcast} className="gap-2"><Mail className="w-4 h-4" /> Enviar broadcast</Button>
                             </div>
                         </div>
-                        <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="rounded-lg border border-border overflow-x-auto">
                             <div className="px-4 py-3 bg-muted/50 flex items-center justify-between">
                                 <h3 className="font-semibold text-sm">Log de emails ({emailTotal})</h3>
                                 <Button size="sm" variant="outline" onClick={loadEmails}>Actualizar</Button>
@@ -366,7 +384,7 @@ export default function AdminPage() {
                             <div className="text-sm text-muted-foreground">{billing.total} usuarios de pago</div>
                             <Button size="sm" variant="outline" className="gap-2" onClick={exportCSV}><Download className="w-4 h-4" /> Exportar CSV</Button>
                         </div>
-                        <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="rounded-lg border border-border overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50">
                                     <tr className="text-left text-muted-foreground">
@@ -414,6 +432,40 @@ export default function AdminPage() {
                                         <span className="font-medium">{count}</span>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* EMAIL MODAL */}
+                {emailModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-card rounded-lg border border-border p-6 max-w-md w-full mx-4">
+                            <h2 className="text-lg font-semibold mb-4">Enviar email</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">Plantilla</label>
+                                    <select value={emailModalTemplate} onChange={e => setEmailModalTemplate(e.target.value)} className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm">
+                                        <option value="welcome">Bienvenida</option>
+                                        <option value="custom">Personalizado</option>
+                                    </select>
+                                </div>
+                                {emailModalTemplate === 'custom' && (
+                                    <>
+                                        <div>
+                                            <label className="text-sm font-medium mb-2 block">Asunto</label>
+                                            <Input placeholder="Asunto..." value={emailModalSubject} onChange={e => setEmailModalSubject(e.target.value)} />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium mb-2 block">HTML</label>
+                                            <textarea placeholder="HTML del email..." value={emailModalHtml} onChange={e => setEmailModalHtml(e.target.value)} className="w-full h-32 rounded-md border border-input bg-card px-3 py-2 text-sm resize-none" />
+                                        </div>
+                                    </>
+                                )}
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="outline" size="sm" onClick={() => setEmailModal(null)}>Cancelar</Button>
+                                    <Button size="sm" onClick={sendEmailToUser}>Enviar</Button>
+                                </div>
                             </div>
                         </div>
                     </div>

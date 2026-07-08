@@ -7,7 +7,7 @@ class BagListCreate(BaseModel):
     description: Optional[str] = Field(default="", max_length=500)
     category: Optional[str] = "Other"
     cover_image_url: Optional[str] = Field(default="", max_length=500)
-    tags: Optional[List[str]] = []
+    tags: Optional[List[str]] = Field(default=[], max_length=4)
     is_public: Optional[bool] = True
     slug: Optional[str] = None
 
@@ -16,7 +16,7 @@ class BagListUpdate(BaseModel):
     description: Optional[str] = Field(default=None, max_length=500)
     category: Optional[str] = None
     cover_image_url: Optional[str] = Field(default=None, max_length=500)
-    tags: Optional[List[str]] = None
+    tags: Optional[List[str]] = Field(default=None, max_length=4)
     is_public: Optional[bool] = None
     products: Optional[List[dict]] = None
 
