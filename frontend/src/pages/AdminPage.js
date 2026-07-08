@@ -260,10 +260,12 @@ export default function AdminPage() {
                                             <td className="px-4 py-2 text-muted-foreground text-xs">{u.created_at?.slice(0, 10)}</td>
                                             <td className="px-4 py-2 text-muted-foreground text-xs">{u.last_login?.slice(0, 10) || '—'}</td>
                                             <td className="px-4 py-2">
-                                                <div className="flex gap-1 flex-wrap">
-                                                    {['free', 'pro', 'premium'].filter(p => p !== u.plan).map(p => (
-                                                        <Button key={p} size="sm" variant="outline" className="h-6 w-16 text-xs px-2" onClick={() => setPlan(u.id, p)}>{p}</Button>
-                                                    ))}
+                                                <div className="flex gap-1 items-center">
+                                                    <select value={u.plan} onChange={e => setPlan(u.id, e.target.value)} className="h-6 text-xs px-2 rounded-md border border-input bg-card">
+                                                        <option value="free">free</option>
+                                                        <option value="pro">pro</option>
+                                                        <option value="premium">premium</option>
+                                                    </select>
                                                     <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => openEmailModal(u.id)}>✉</Button>
                                                     <Button size="sm" variant={u.suspended ? 'default' : 'destructive'} className="h-6 text-xs px-2" onClick={() => setSuspended(u.id, !u.suspended)}>
                                                         {u.suspended ? 'Reactivar' : 'Suspender'}

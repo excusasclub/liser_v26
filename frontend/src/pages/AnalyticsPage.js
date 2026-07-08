@@ -8,7 +8,55 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 const MONTH_NAMES_FULL = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+function HeatmapYear({ staticData }) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const dayClicks = {};
+    staticData?.forEach(c => { dayClicks[c.date] = c.clicks; });
 
+    const startOfYear = new Date(year, 0, 1);
+    const dayOfWeek = startOfYear.getDay();
+    const adjustedStart = (dayOfWeek + 6) % 7;
+    const endOfYear = new Date(year, 11, 31);
+    const totalDays = Math.floor((endOfYear - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+    const totalCells = adjustedStart + totalDays;
+    const weeks = Math.ceil(totalCells / 7);
+
+    const maxClicks = Math.max(...Object.values(dayClicks), 1);
+    const getColor = (clicks) => {
+        if (!clicks) return 'bg-muted';
+        const intensity = clicks / maxClicks;
+        if (intensity < 0.25) return 'bg-primary/20';
+        if (intensity < 0.5) return 'bg-primary/40';
+        if (intensity < 0.75) return 'bg-primary/70';
+        return 'bg-primary';
+    };
+
+    const cells = [];
+    for (let i = 0; i < adjustedStart; i++) cells.push(null);
+    for (let d = 0; d < totalDays; d++) {
+        const date = new Date(year, 0, 1 + d);
+        const dateStr = `${year}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        cells.push({ date: dateStr, day: date.getDate(), month: date.getMonth() });
+    }
+
+    return (
+        <div className="mt-4">
+            <p className="text-xs text-muted-foreground mb-3">Año {year}</p>
+            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${weeks}, minmax(0, 1fr))` }}>
+                {cells.map((cell, i) => {
+                    const clicks = cell ? (dayClicks[cell.date] || 0) : 0;
+                    return (
+                        <div key={i}
+                            title={cell ? `${cell.date} — ${clicks} clics` : ''}
+                            className={`w-2 h-2 rounded-xs ${cell ? getColor(clicks) : 'bg-transparent'}`}
+                        />
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 function HeatmapCalendar({ baglistId, staticData }) {
     const now = new Date();
     const [year, setYear] = useState(now.getFullYear());
@@ -131,7 +179,7 @@ export default function AnalyticsPage() {
                             <p className="text-sm text-muted-foreground">Clics totales en enlaces de afiliado</p>
                         </div>
                     </div>
-                    <HeatmapCalendar staticData={data?.daily_clicks} />
+                    <HeatmapYear staticData={data?.daily_clicks} />
                 </CardContent>
             </Card>
 
