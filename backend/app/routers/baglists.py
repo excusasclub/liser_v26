@@ -340,7 +340,7 @@ async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)
     # Clics diarios y mensuales globales
     daily_pipeline = [
         {"$match": {"baglist_id": baglist_id, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
-        {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}}, "clicks": {"$sum": 1}}},
+        {"$group": {"_id": {"$substr": ["$created_at", 0, 10]}, "clicks": {"$sum": 1}}},
         {"$sort": {"_id": 1}}
     ]
     daily_clicks = await db.clicks.aggregate(daily_pipeline).to_list(10000)
@@ -348,7 +348,7 @@ async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)
     
     monthly_pipeline = [
         {"$match": {"baglist_id": baglist_id, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
-        {"$group": {"_id": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}}, "clicks": {"$sum": 1}}},
+        {"$group": {"_id": {"$substr": ["$created_at", 0, 7]}, "clicks": {"$sum": 1}}},
         {"$sort": {"_id": 1}}
     ]
     monthly_clicks = await db.clicks.aggregate(monthly_pipeline).to_list(10000)
