@@ -50,6 +50,19 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+
+          {/* BagList Featured */}
+          <div className="mt-20">
+            <p className="text-sm text-muted-foreground mb-4 uppercase tracking-wider font-semibold">Ejemplo de lo que puedes crear</p>
+            <Link to="/liser/mi-mochila-de-senderismo" className="block rounded-xl overflow-hidden border border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl">
+              <div className="h-80 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white">
+                <div className="text-center">
+                  <h3 className="text-3xl font-bold font-['Outfit'] mb-2">Mi Mochila de Senderismo</h3>
+                  <p className="text-emerald-100">Descubre los mejores productos para tus aventuras</p>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
