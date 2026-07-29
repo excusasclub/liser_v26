@@ -314,8 +314,8 @@ async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)
         {"$match": {"baglist_id": baglist_id, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
         {"$group": {
             "_id": {
-                "month": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
-                "day": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+                "month": {"$substr": ["$created_at", 0, 7]},
+                "day": {"$substr": ["$created_at", 0, 10]},
                 "product_id": "$product_id"
             },
             "clicks": {"$sum": 1}
