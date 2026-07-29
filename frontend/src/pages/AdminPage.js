@@ -42,6 +42,8 @@ export default function AdminPage() {
         if (!user || user.role !== 'admin') navigate('/dashboard');
     }, [user, navigate]);
 
+    if (!user || user.role !== 'admin') return null;
+
     useEffect(() => {
         if (section === 'usuarios') loadUsers();
         if (section === 'baglists') loadBaglists();
