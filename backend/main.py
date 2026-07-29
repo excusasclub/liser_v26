@@ -49,6 +49,12 @@ from app.database import create_indexes
 @app.on_event("startup")
 async def startup_event():
     await create_indexes()
+    # Programar cron de limpieza Cloudinary cada domingo a las 2 AM
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from app.services.cloudinary_cleanup_service import cleanup_unused_images
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(cleanup_unused_images, 'cron', day_of_week=6, hour=2, minute=0)
+    scheduler.start()
 @app.get("/api/categories")
 async def get_categories():
     return CATEGORIES

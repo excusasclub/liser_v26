@@ -20,6 +20,8 @@ async def create_indexes():
     await db.clicks.create_index("created_at", expireAfterSeconds=31536000)
     await db.clicks.create_index("product_id")
     await db.clicks.create_index("baglist_id")
+    await db.clicks.create_index([("baglist_id", 1), ("created_at", -1)])
+    await db.clicks.create_index([("type", 1), ("created_at", -1)])
 
     # Followers
     await db.followers.create_index("baglist_id")

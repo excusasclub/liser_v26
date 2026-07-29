@@ -308,27 +308,53 @@ async def get_baglist_analytics(baglist_id: str, user=Depends(get_required_user)
     baglist = await db.baglists.find_one({"id": baglist_id, "user_id": user["id"]}, {"_id": 0})
     if not baglist:
         raise HTTPException(status_code=404, detail="BagList not found")
-    clicks = await db.clicks.find({"baglist_id": baglist_id}, {"_id": 0}).to_list(10000)
-    affiliate_clicks = [c for c in clicks if c.get("type", "affiliate") == "affiliate"]
-    discount_clicks = [c for c in clicks if c.get("type") == "discount"]
-    product_affiliate = {}
-    product_discount = {}
-    for c in affiliate_clicks:
-        pid = c["product_id"]
-        product_affiliate[pid] = product_affiliate.get(pid, 0) + 1
-    for c in discount_clicks:
-        pid = c["product_id"]
-        product_discount[pid] = product_discount.get(pid, 0) + 1
-    monthly = {}
-    daily = {}
-    for c in affiliate_clicks:
-        month = c["created_at"][:7]
-        monthly[month] = monthly.get(month, 0) + 1
-        day = c["created_at"][:10]
-        daily[day] = daily.get(day, 0) + 1
-    monthly_sorted = [{"month": k, "clicks": v} for k, v in sorted(monthly.items())]
-    daily_sorted = [{"date": k, "clicks": v} for k, v in sorted(daily.items())]
+    
+    # Agregación en Mongo, no en Python
+    click_pipeline = [
+        {"$match": {"baglist_id": baglist_id, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
+        {"$group": {
+            "_id": {
+                "month": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}},
+                "day": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+                "product_id": "$product_id"
+            },
+            "clicks": {"$sum": 1}
+        }},
+        {"$group": {
+            "_id": "$_id.product_id",
+            "total": {"$sum": "$clicks"},
+            "monthly": {"$push": {"month": "$_id.month", "clicks": "$clicks"}},
+            "daily": {"$push": {"date": "$_id.day", "clicks": "$clicks"}}
+        }}
+    ]
+    affiliate_stats = await db.clicks.aggregate(click_pipeline).to_list(10000)
+    
+    # Contar discount clicks
+    discount_count = await db.clicks.count_documents({"baglist_id": baglist_id, "type": "discount"})
+    
+    # Construir stats por producto
+    product_affiliate = {s["_id"]: s["total"] for s in affiliate_stats}
     products = baglist.get("products", [])
-    product_stats = sorted([{"id": p["id"], "name": p["name"], "image_url": p.get("image_url", ""), "clicks": product_affiliate.get(p["id"], 0), "discount_clicks": product_discount.get(p["id"], 0)} for p in products], key=lambda x: x["clicks"], reverse=True)
+    product_stats = sorted([{"id": p["id"], "name": p["name"], "image_url": p.get("image_url", ""), "clicks": product_affiliate.get(p["id"], 0), "discount_clicks": 0} for p in products], key=lambda x: x["clicks"], reverse=True)
+    
+    # Clics diarios y mensuales globales
+    daily_pipeline = [
+        {"$match": {"baglist_id": baglist_id, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
+        {"$group": {"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}}, "clicks": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ]
+    daily_clicks = await db.clicks.aggregate(daily_pipeline).to_list(10000)
+    daily_sorted = [{"date": d["_id"], "clicks": d["clicks"]} for d in daily_clicks]
+    
+    monthly_pipeline = [
+        {"$match": {"baglist_id": baglist_id, "$or": [{"type": "affiliate"}, {"type": {"$exists": False}}]}},
+        {"$group": {"_id": {"$dateToString": {"format": "%Y-%m", "date": "$created_at"}}, "clicks": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ]
+    monthly_clicks = await db.clicks.aggregate(monthly_pipeline).to_list(10000)
+    monthly_sorted = [{"month": m["_id"], "clicks": m["clicks"]} for m in monthly_clicks]
+    
     followers = await db.followers.count_documents({"baglist_id": baglist_id})
-    return {"baglist_id": baglist_id, "title": baglist["title"], "total_clicks": len(affiliate_clicks), "total_discount_clicks": len(discount_clicks), "favorites_count": baglist.get("favorites_count", 0), "saves_count": baglist.get("saves_count", 0), "followers": followers, "monthly_clicks": monthly_sorted, "daily_clicks": daily_sorted, "products": product_stats}
+    total_affiliate = sum(s["total"] for s in affiliate_stats)
+    
+    return {"baglist_id": baglist_id, "title": baglist["title"], "total_clicks": total_affiliate, "total_discount_clicks": discount_count, "favorites_count": baglist.get("favorites_count", 0), "saves_count": baglist.get("saves_count", 0), "followers": followers, "monthly_clicks": monthly_sorted, "daily_clicks": daily_sorted, "products": product_stats}
