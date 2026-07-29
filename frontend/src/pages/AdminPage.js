@@ -185,11 +185,15 @@ export default function AdminPage() {
                             {[
                                 { label: 'Usuarios totales', value: analytics.total_users },
                                 { label: 'Nuevos hoy', value: analytics.new_users_today },
+                                { label: 'Activos (7d)', value: analytics.active_users_7d },
                                 { label: 'Clics totales', value: analytics.total_clicks },
                                 { label: 'Emails capturados', value: analytics.total_followers },
                                 { label: 'BagLists públicas', value: analytics.public_baglists },
                                 { label: 'BagLists totales', value: analytics.total_baglists },
                                 { label: 'Listas inactivas +30d', value: analytics.inactive_baglists },
+                                { label: 'Usuarios Free', value: analytics.free_users },
+                                { label: 'Usuarios Pagos', value: analytics.paid_users },
+                                { label: 'Conversion Rate %', value: analytics.conversion_rate + '%' },
                             ].map(({ label, value }) => (
                                 <div key={label} className="rounded-lg border border-border bg-card p-4">
                                     <div className="text-2xl font-bold text-primary">{value}</div>

@@ -164,15 +164,30 @@ async def admin_analytics(admin=Depends(get_required_admin)):
         key=lambda x: x["clicks"], reverse=True
     )
 
+    # Usuarios activos (último login en últimos 7 días)
+    seven_days_ago = (now - timedelta(days=7)).isoformat()
+    active_users = await db.users.count_documents({
+        "last_login": {"$gte": seven_days_ago}
+    })
+
+    # Conversion rate (free→pro/premium)
+    free_users = await db.users.count_documents({"plan": "free"})
+    paid_users = await db.users.count_documents({"plan": {"$in": ["pro", "premium"]}})
+    conversion_rate = round((paid_users / total_users * 100), 2) if total_users > 0 else 0
+
     return {
         "total_users": total_users,
         "new_users_today": new_users_today,
+        "active_users_7d": active_users,
         "total_baglists": total_baglists,
         "public_baglists": public_baglists,
         "total_clicks": total_clicks,
         "total_followers": total_followers,
         "users_per_day": days,
         "inactive_baglists": inactive_baglists,
+        "free_users": free_users,
+        "paid_users": paid_users,
+        "conversion_rate": conversion_rate,
         "categories": categories,
     }
 
@@ -308,3 +323,9 @@ async def admin_system(admin=Depends(get_required_admin)):
         counts[col] = await db[col].count_documents({})
 
     return {"cloudinary": cloudinary_info, "collections": counts}
+
+@router.post("/maintenance/cleanup-cloudinary")
+async def admin_cleanup_cloudinary(admin=Depends(get_required_admin)):
+    from app.services.cloudinary_cleanup_service import cleanup_unused_images
+    result = await cleanup_unused_images()
+    return result
