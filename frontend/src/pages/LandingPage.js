@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Layers, BarChart3, Lock, Zap, Users, Sparkles } from 'lucide-react';
+import { ArrowRight, Layers, BarChart3, Lock, Zap, Sparkles } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function LandingPage() {
-  const [featuredCount, setFeaturedCount] = useState(0);
+  const [featured, setFeatured] = useState(null);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   useEffect(() => {
-    api.get('/baglists?limit=1')
-      .then(res => setFeaturedCount(res.data.total || 1000))
-      .catch(() => setFeaturedCount(1000));
+    api.get('/baglists/797345e2-b24e-4af9-b39a-e73cb963dc9c')
+      .then(res => setFeatured(res.data))
+      .catch(() => console.log('Error loading featured'))
+      .finally(() => setLoadingFeatured(false));
   }, []);
 
   return (
@@ -50,41 +52,59 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* BagList Featured */}
-          <div className="mt-20">
-            <p className="text-sm text-muted-foreground mb-4 uppercase tracking-wider font-semibold">Ejemplo de lo que puedes crear</p>
-            <Link to="/liser/mi-mochila-de-senderismo" className="block rounded-xl overflow-hidden border border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl">
-              <div className="h-80 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white">
-                <div className="text-center">
-                  <h3 className="text-3xl font-bold font-['Outfit'] mb-2">Mi Mochila de Senderismo</h3>
-                  <p className="text-emerald-100">Descubre los mejores productos para tus aventuras</p>
+      {/* ── FEATURED BAGLIST ── */}
+      {!loadingFeatured && featured && (
+        <section className="border-b border-border/30 py-20 md:py-28">
+          <div className="max-w-6xl mx-auto px-6">
+            <p className="text-sm text-muted-foreground mb-6 uppercase tracking-wider font-semibold">Ejemplo de lo que puedes crear</p>
+
+            <Link to={`/${featured.username}/${featured.slug}`} className="block rounded-2xl overflow-hidden border border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl mb-8">
+              <div className="h-80 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center relative">
+                {featured.cover_image_url && (
+                  <img src={featured.cover_image_url} alt={featured.title} className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end">
+                  <div className="p-8 w-full">
+                    <h3 className="text-3xl font-bold font-['Outfit'] text-white mb-2">{featured.title}</h3>
+                    <p className="text-emerald-100">Por @{featured.username}</p>
+                  </div>
                 </div>
               </div>
             </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* ── STATS ── */}
-      <section className="border-b border-border/30 bg-card/30 py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <div className="text-3xl font-bold text-foreground mb-1">1000+</div>
-              <p className="text-sm text-muted-foreground">Baglists creadas</p>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-foreground mb-1">10M+</div>
-              <p className="text-sm text-muted-foreground">Clics totales</p>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-foreground mb-1">500+</div>
-              <p className="text-sm text-muted-foreground">Creadores activos</p>
-            </div>
+            {featured.products && featured.products.length > 0 && (
+              <div>
+                <h3 className="text-2xl font-bold text-foreground mb-6 font-['Outfit']">Productos destacados</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {featured.products.slice(0, 4).map((product) => (
+                    <a key={product.id} href={product.link} target="_blank" rel="noopener noreferrer" className="group">
+                      <div className="rounded-lg border border-border/50 overflow-hidden hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+                        {product.image_url && (
+                          <div className="h-48 overflow-hidden bg-muted">
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          </div>
+                        )}
+                        <div className="p-4 flex-1 flex flex-col">
+                          <h4 className="font-semibold text-foreground text-sm line-clamp-2 mb-2">{product.name}</h4>
+                          {product.description && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mb-4 flex-1">{product.description}</p>
+                          )}
+                          <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-xs font-semibold">
+                            Ver producto
+                          </Button>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── CÓMO FUNCIONA ── */}
       <section className="border-b border-border/30 py-20 md:py-28">
@@ -99,40 +119,34 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="relative">
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <span className="text-lg font-bold text-primary">1</span>
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Crea tu perfil</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Regístrate gratis y personaliza tu espacio. Sin tarjeta de crédito.
-                </p>
+            <div>
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                <span className="text-lg font-bold text-primary">1</span>
               </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Crea tu perfil</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Regístrate gratis y personaliza tu espacio. Sin tarjeta de crédito.
+              </p>
             </div>
 
-            <div className="relative">
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <span className="text-lg font-bold text-primary">2</span>
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Crea BagLists</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Organiza productos en listas bonitas. Añade fotos, descripciones y enlaces.
-                </p>
+            <div>
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                <span className="text-lg font-bold text-primary">2</span>
               </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Crea BagLists</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Organiza productos en listas bonitas. Añade fotos, descripciones y enlaces.
+              </p>
             </div>
 
-            <div className="relative">
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <span className="text-lg font-bold text-primary">3</span>
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Comparte y gana</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Comparte tus listas. Gana comisiones por cada clic y venta.
-                </p>
+            <div>
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                <span className="text-lg font-bold text-primary">3</span>
               </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Comparte y monetiza</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Comparte tus listas. Gana comisiones por cada clic y venta.
+              </p>
             </div>
           </div>
         </div>
@@ -196,88 +210,18 @@ export default function LandingPage() {
 
       {/* ── PLANES ── */}
       <section className="border-b border-border/30 py-20 md:py-28">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-16 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-['Outfit']">
-              Planes para todos
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Comienza gratis. Paga solo cuando quieras más.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-8 rounded-xl border border-border/50 bg-card/30">
-              <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Free</h3>
-              <p className="text-muted-foreground text-sm mb-6">Perfecto para empezar</p>
-              <div className="text-3xl font-bold text-foreground mb-6">Gratis</div>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8">
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> 3 BagLists
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> 7 productos por lista
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Analytics básico
-                </li>
-              </ul>
-              <Link to="/auth" className="w-full">
-                <Button variant="outline" size="lg" className="w-full font-semibold">
-                  Comenzar
-                </Button>
-              </Link>
-            </div>
-
-            <div className="p-8 rounded-xl border-2 border-primary bg-card/40 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-primary text-white">Popular</Badge>
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Pro</h3>
-              <p className="text-muted-foreground text-sm mb-6">Para creadores activos</p>
-              <div className="text-3xl font-bold text-foreground mb-1">$9<span className="text-lg text-muted-foreground">/mes</span></div>
-              <p className="text-xs text-muted-foreground mb-6">Facturación anual</p>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8">
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> 10 BagLists
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> 12 productos por lista
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Analytics avanzado
-                </li>
-              </ul>
-              <Link to="/auth" className="w-full">
-                <Button size="lg" className="w-full bg-primary hover:bg-primary/90 font-semibold">
-                  Upgrade Pro
-                </Button>
-              </Link>
-            </div>
-
-            <div className="p-8 rounded-xl border border-border/50 bg-card/30">
-              <h3 className="text-xl font-semibold text-foreground mb-2 font-['Outfit']">Premium</h3>
-              <p className="text-muted-foreground text-sm mb-6">Sin límites</p>
-              <div className="text-3xl font-bold text-foreground mb-1">$19<span className="text-lg text-muted-foreground">/mes</span></div>
-              <p className="text-xs text-muted-foreground mb-6">Facturación anual</p>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8">
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> 25 BagLists
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> 20 productos por lista
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Acceso a blog exclusivo
-                </li>
-              </ul>
-              <Link to="/auth" className="w-full">
-                <Button variant="outline" size="lg" className="w-full font-semibold">
-                  Upgrade Premium
-                </Button>
-              </Link>
-            </div>
-          </div>
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-['Outfit']">
+            Planes para todos
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-12">
+            Comienza gratis. Paga solo cuando quieras más.
+          </p>
+          <Link to="/pricing">
+            <Button variant="outline" size="lg" className="font-semibold">
+              Ver planes y precios
+            </Button>
+          </Link>
         </div>
       </section>
 
