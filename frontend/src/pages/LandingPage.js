@@ -11,8 +11,11 @@ export default function LandingPage() {
 
   useEffect(() => {
     api.get('/baglists/797345e2-b24e-4af9-b39a-e73cb963dc9c')
-      .then(res => setFeatured(res.data))
-      .catch(() => console.log('Error loading featured'))
+      .then(res => {
+        console.log('Featured loaded:', res.data);
+        setFeatured(res.data);
+      })
+      .catch(err => console.error('Error loading featured:', err))
       .finally(() => setLoadingFeatured(false));
   }, []);
 
