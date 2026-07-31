@@ -63,11 +63,11 @@ export default function LandingPage() {
         <section className="border-b border-border/30 py-20 md:py-28">
           <div className="max-w-6xl mx-auto px-6">
             <div className="mb-12 p-6 rounded-xl border-2 border-primary/30 bg-primary/5">
-              <p className="text-sm text-primary font-semibold uppercase tracking-wider mb-2">✨ Ejemplo en vivo</p>
+              <p className="text-sm text-primary font-semibold uppercase tracking-wider mb-2">BagList Ejemplo</p>
               <p className="text-muted-foreground">Así se ve una BagList creada en Liser. Puedes crear la tuya en minutos.</p>
             </div>
 
-            <Link to={`/${featured.username}/${featured.slug}`} className="block rounded-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl">
+            <Link to={`/${featured.username}/${featured.slug}`} onClick={(e) => { window.scrollTo(0, 0); }} className="block rounded-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl max-w-2xl mx-auto">
               <img src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785492069/Captura_de_pantalla_2026-07-31_120100_g832yo.jpg" alt="Ejemplo de BagList" className="w-full h-auto" />
             </Link>
           </div>
