@@ -67,77 +67,9 @@ export default function LandingPage() {
               <p className="text-muted-foreground">Así se ve una BagList creada en Liser. Puedes crear la tuya en minutos.</p>
             </div>
 
-            <Link to={`/${featured.username}/${featured.slug}`} className="block rounded-2xl overflow-hidden border border-primary/30 hover:border-primary/60 transition-all duration-300 mb-12">
-              <div className="h-80 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center relative">
-                {featured.cover_image_url && (
-                  <img src={featured.cover_image_url} alt={featured.title} className="w-full h-full object-cover" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end">
-                  <div className="p-8 w-full">
-                    <h3 className="text-3xl font-bold font-['Outfit'] text-white mb-2">{featured.title}</h3>
-                    <p className="text-emerald-100">Por @{featured.username}</p>
-                  </div>
-                </div>
-              </div>
+            <Link to={`/${featured.username}/${featured.slug}`} className="block rounded-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl">
+              <img src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785492069/Captura_de_pantalla_2026-07-31_120100_g832yo.jpg" alt="Ejemplo de BagList" className="w-full h-auto" />
             </Link>
-
-            {featured.products && featured.products.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-bold text-foreground mb-6 font-['Outfit']">{featured.products.length} productos en esta lista</h3>
-                <div className="space-y-4">
-                  {featured.products.slice(0, 6).map((product) => (
-                    <div key={product.id}>
-                      <a href={product.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex gap-4 p-4 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-card/50 transition-all duration-300">
-                        {product.image_url && (
-                          <div className="flex-shrink-0 w-28 h-28 rounded-lg overflow-hidden bg-muted">
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-foreground text-base mb-2 line-clamp-2">{product.name}</h4>
-                          {product.description && (
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
-                          )}
-
-                          {product.custom_fields && (
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {Array.isArray(product.custom_fields) ? (
-                                product.custom_fields.map((field, idx) => (
-                                  <Badge key={`field-${product.id}-${idx}`} variant="secondary" className="text-xs">{field}</Badge>
-                                ))
-                              ) : (
-                                Object.entries(product.custom_fields).map(([key, value], idx) => (
-                                  <Badge key={`field-${product.id}-${key}-${idx}`} variant="secondary" className="text-xs">{key}: {value}</Badge>
-                                ))
-                              )}
-                            </div>
-                          )}
-
-                          {product.discount_code && (
-                            <div className="mb-3 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                              <p className="text-xs text-emerald-600 font-semibold">Código: {product.discount_code}</p>
-                            </div>
-                          )}
-
-                          <a href={product.link} target="_blank" rel="noopener noreferrer">
-                            <Button size="sm" className="bg-primary hover:bg-primary/90 text-xs font-semibold gap-1">
-                              Ver producto <ArrowRight className="w-3 h-3" />
-                            </Button>
-                          </a>
-                        </div>
-                      </a>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-8 text-center">
-                  <Link to={`/${featured.username}/${featured.slug}`}>
-                    <Button variant="outline" className="font-semibold">
-                      Ver lista completa ({featured.products.length} productos)
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
           </div>
         </section>
       )}
