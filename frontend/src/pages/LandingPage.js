@@ -101,8 +101,8 @@ export default function LandingPage() {
 
                           {product.custom_fields && Object.keys(product.custom_fields).length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-3">
-                              {Object.entries(product.custom_fields).map(([key, value]) => (
-                                <Badge key={key} variant="secondary" className="text-xs">{key}: {value}</Badge>
+                              {Object.entries(product.custom_fields).map(([key, value], idx) => (
+                                <Badge key={`${product.id}-${idx}`} variant="secondary" className="text-xs">{key}: {value}</Badge>
                               ))}
                             </div>
                           )}
