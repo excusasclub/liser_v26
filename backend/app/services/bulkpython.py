@@ -8,7 +8,7 @@ import os
 async def bulk_insert_baglists():
     """Inserta BagLists desde CSV a MongoDB"""
     try:
-        csv_path = os.path.join(os.path.dirname(__file__), '..', '..', 'baglists_bulk.csv')
+        csv_path = os.path.join(os.path.dirname(__file__), 'baglists_bulk.csv')
         
         if not os.path.exists(csv_path):
             print(f"❌ CSV no encontrado en {csv_path}")
