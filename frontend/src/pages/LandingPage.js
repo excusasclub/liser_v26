@@ -99,11 +99,17 @@ export default function LandingPage() {
                             <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
                           )}
 
-                          {product.custom_fields && Object.keys(product.custom_fields).length > 0 && (
+                          {product.custom_fields && (
                             <div className="flex flex-wrap gap-2 mb-3">
-                              {Object.entries(product.custom_fields).map(([key, value], idx) => (
-                                <Badge key={`${product.id}-${idx}`} variant="secondary" className="text-xs">{key}: {value}</Badge>
-                              ))}
+                              {Array.isArray(product.custom_fields) ? (
+                                product.custom_fields.map((field, idx) => (
+                                  <Badge key={`field-${product.id}-${idx}`} variant="secondary" className="text-xs">{field}</Badge>
+                                ))
+                              ) : (
+                                Object.entries(product.custom_fields).map(([key, value], idx) => (
+                                  <Badge key={`field-${product.id}-${key}-${idx}`} variant="secondary" className="text-xs">{key}: {value}</Badge>
+                                ))
+                              )}
                             </div>
                           )}
 
