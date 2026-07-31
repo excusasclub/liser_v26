@@ -6,18 +6,11 @@ import { ArrowRight, Layers, BarChart3, Lock, Zap, Sparkles } from 'lucide-react
 import api from '@/lib/api';
 
 export default function LandingPage() {
-  const [featured, setFeatured] = useState(null);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
-
-  useEffect(() => {
-    api.get('/baglists/797345e2-b24e-4af9-b39a-e73cb963dc9c')
-      .then(res => {
-        console.log('Featured loaded:', res.data);
-        setFeatured(res.data);
-      })
-      .catch(err => console.error('Error loading featured:', err))
-      .finally(() => setLoadingFeatured(false));
-  }, []);
+  const featured = {
+    username: 'liser',
+    slug: 'mi-mochila-de-senderismo',
+    title: 'Mi Mochila de Senderismo'
+  };
 
   return (
     <div className="min-h-screen bg-background" data-testid="landing-page">
@@ -59,20 +52,18 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURED BAGLIST ── */}
-      {!loadingFeatured && featured && (
-        <section className="border-b border-border/30 py-20 md:py-28">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="mb-12 p-6 rounded-xl border-2 border-primary/30 bg-primary/5">
-              <p className="text-sm text-primary font-semibold uppercase tracking-wider mb-2">BagList Ejemplo</p>
-              <p className="text-muted-foreground">Así se ve una BagList creada en Liser. Puedes crear la tuya en minutos.</p>
-            </div>
-
-            <Link to={`/${featured.username}/${featured.slug}`} onClick={(e) => { window.scrollTo(0, 0); }} className="block rounded-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl max-w-2xl mx-auto">
-              <img src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785492069/Captura_de_pantalla_2026-07-31_120100_g832yo.jpg" alt="Ejemplo de BagList" className="w-full h-auto" />
-            </Link>
+      <section className="border-b border-border/30 py-20 md:py-28">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-12 p-6 rounded-xl border-2 border-primary/30 bg-primary/5">
+            <p className="text-sm text-primary font-semibold uppercase tracking-wider mb-2">BagList Ejemplo</p>
+            <p className="text-muted-foreground">Así se ve una BagList creada en Liser. Puedes crear la tuya en minutos.</p>
           </div>
-        </section>
-      )}
+
+          <Link to={`/${featured.username}/${featured.slug}`} onClick={(e) => { window.scrollTo(0, 0); }} className="block rounded-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl max-w-2xl mx-auto">
+            <img src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785492069/Captura_de_pantalla_2026-07-31_120100_g832yo.jpg" alt="Ejemplo de BagList" className="w-full h-auto" />
+          </Link>
+        </div>
+      </section>
 
       {/* ── CÓMO FUNCIONA ── */}
       <section className="border-b border-border/30 py-20 md:py-28">
