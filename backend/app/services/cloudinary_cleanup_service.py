@@ -32,9 +32,14 @@ async def cleanup_unused_images():
         deleted_count = 0
         for asset in cloudinary_assets.get("resources", []):
             asset_url = asset.get("secure_url")
+            public_id = asset.get("public_id", "")
+            
+            # No borrar imágenes de la carpeta /liser/landing/
+            if public_id.startswith("liser/landing/"):
+                continue
+            
             if asset_url and asset_url not in used_urls:
                 try:
-                    public_id = asset.get("public_id")
                     cloudinary.api.delete_resources([public_id])
                     deleted_count += 1
                     logger.info(f"Deleted unused image: {public_id}")

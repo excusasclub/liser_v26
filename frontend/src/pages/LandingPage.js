@@ -60,7 +60,7 @@ export default function LandingPage() {
           </div>
 
           <Link to={`/${featured.username}/${featured.slug}`} onClick={(e) => { window.scrollTo(0, 0); }} className="block rounded-2xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl max-w-2xl mx-auto">
-            <img src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785492069/Captura_de_pantalla_2026-07-31_120100_g832yo.jpg" alt="Ejemplo de BagList" className="w-full h-auto" />
+            <img src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785495315/Captura_de_pantalla_2026-07-31_120100_xvshij.jpg" alt="Ejemplo de BagList" className="w-full h-auto" />
           </Link>
         </div>
       </section>
