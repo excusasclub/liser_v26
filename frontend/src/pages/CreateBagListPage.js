@@ -495,7 +495,7 @@ export default function CreateBagListPage() {
               </div>
               <div className="space-y-2">
                 <Label>Campos personalizados</Label>
-                {(productForm.custom_fields || []).map((field, idx) => (
+                {Array.isArray(productForm.custom_fields) ? productForm.custom_fields.map((field, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
                     <Input placeholder="Nombre (ej: Peso)" value={field.key}
                       onChange={(e) => {
@@ -511,6 +511,18 @@ export default function CreateBagListPage() {
                       }} />
                     <Button variant="ghost" size="icon" onClick={() => {
                       setProductForm({ ...productForm, custom_fields: productForm.custom_fields.filter((_, i) => i !== idx) });
+                    }}>
+                      <X className="w-4 h-4 text-red-400" />
+                    </Button>
+                  </div>
+                )) : Object.entries(productForm.custom_fields || {}).map(([key, value], idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Nombre" value={key} disabled />
+                    <Input placeholder="Valor" value={value} disabled />
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      const updated = { ...productForm.custom_fields };
+                      delete updated[key];
+                      setProductForm({ ...productForm, custom_fields: updated });
                     }}>
                       <X className="w-4 h-4 text-red-400" />
                     </Button>
