@@ -350,7 +350,7 @@ export default function BagListDetailPage() {
                         <a href={normalizeUrl(product.link)} target="_blank" rel="noopener noreferrer"
                           onClick={(e) => { e.stopPropagation(); handleProductClick(baglist.id, product.id); }}>
                           <Button size="sm" className="gap-1.5 text-xs h-7 px-3 bg-primary hover:bg-primary/90 text-primary-foreground">
-                            <ExternalLink className="w-3 h-3" /> Ver producto
+                            <ExternalLink className="w-3 h-3" /> Ver
                           </Button>
                         </a>
                       )}
