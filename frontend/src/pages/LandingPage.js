@@ -110,7 +110,7 @@ export default function LandingPage() {
           <div className="relative rounded-2xl p-2 bg-gradient-to-b from-border/80 via-border/30 to-border/10 shadow-2xl overflow-hidden">
             <div className="bg-background rounded-xl overflow-hidden border border-border/50">
               <img
-                src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785495315/Captura_de_pantalla_2026-07-31_120100_xvshij.jpg"
+                src="https://res.cloudinary.com/de8fcizbx/image/upload/v1785741354/Captura_de_pantalla_2026-07-31_120100_mpv5me.jpg"
                 alt="Ejemplo de BagList"
                 className="w-full h-auto object-cover"
               />
