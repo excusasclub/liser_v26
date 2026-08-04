@@ -111,7 +111,13 @@ export default function CreateBagListPage() {
     if (!productForm.name.trim()) { toast.error('El nombre es obligatorio'); return; }
     if (!isEditing) { toast.error('Guarda la lista primero'); return; }
     try {
-      const payload = { ...productForm, price: productForm.price !== '' ? parseFloat(productForm.price) : null };
+      const payload = {
+        ...productForm,
+        price: productForm.price !== '' ? parseFloat(productForm.price) : null,
+        custom_fields: Array.isArray(productForm.custom_fields)
+          ? productForm.custom_fields
+          : Object.entries(productForm.custom_fields || {}).map(([key, value]) => ({ key, value }))
+      };
       if (editingProduct) {
         const res = await api.put(`/baglists/${id}/products/${editingProduct.id}`, payload);
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? res.data : p));
