@@ -510,7 +510,11 @@ export default function CreateBagListPage() {
                         setProductForm({ ...productForm, custom_fields: updated });
                       }} />
                     <Button variant="ghost" size="icon" onClick={() => {
-                      setProductForm({ ...productForm, custom_fields: productForm.custom_fields.filter((_, i) => i !== idx) });
+                      setProductForm({
+                        ...productForm, custom_fields: (Array.isArray(productForm.custom_fields)
+                          ? productForm.custom_fields
+                          : Object.entries(productForm.custom_fields || {}).map(([k, v]) => ({ key: k, value: v }))).filter((_, i) => i !== idx)
+                      });
                     }}>
                       <X className="w-4 h-4 text-red-400" />
                     </Button>
@@ -529,7 +533,14 @@ export default function CreateBagListPage() {
                   </div>
                 ))}
                 <Button variant="outline" size="sm" type="button" className="gap-2 w-full"
-                  onClick={() => setProductForm({ ...productForm, custom_fields: [...(productForm.custom_fields || []), { key: '', value: '' }] })}>
+                  onClick={() => setProductForm({
+                    ...productForm, custom_fields: [
+                      ...(Array.isArray(productForm.custom_fields)
+                        ? productForm.custom_fields
+                        : Object.entries(productForm.custom_fields || {}).map(([k, v]) => ({ key: k, value: v }))),
+                      { key: '', value: '' }
+                    ]
+                  })}>
                   <Plus className="w-4 h-4" /> Añadir campo
                 </Button>
               </div>
