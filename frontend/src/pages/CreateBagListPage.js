@@ -223,12 +223,12 @@ export default function CreateBagListPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Título *</Label>
-                <Input data-testid="baglist-title-input" placeholder="Mis productos favoritos" value={form.title}
+                <Input data-testid="baglist-title-input" placeholder="Mis productos favoritos" maxLength={100} value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Descripción</Label>
-                <Textarea data-testid="baglist-description-input" placeholder="Describe tu lista..." rows={3}
+                <Textarea data-testid="baglist-description-input" placeholder="Describe tu lista..." maxLength={500} rows={3}
                   value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -303,7 +303,7 @@ export default function CreateBagListPage() {
             <CardHeader><CardTitle className="font-['Outfit'] text-base">Etiquetas</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <div className="flex gap-2">
-                <Input data-testid="tag-input" placeholder="Agregar etiqueta" value={tagInput}
+                <Input data-testid="tag-input" placeholder="Agregar etiqueta" maxLength={20} value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} />
                 <Button variant="outline" size="sm" onClick={addTag} data-testid="add-tag-btn">
@@ -413,8 +413,7 @@ export default function CreateBagListPage() {
               </div>
               <div className="space-y-2">
                 <Label>Nombre *</Label>
-                <Input data-testid="product-name-input" value={productForm.name} placeholder="Nombre del producto"
-                  maxLength={100}
+                <Input data-testid="product-name-input" value={productForm.name} placeholder="Nombre del producto" maxLength={100}
                   onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} />
               </div>
               <div className="space-y-2">
@@ -428,7 +427,7 @@ export default function CreateBagListPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Precio</Label>
-                  <Input data-testid="product-price-input" type="number" step="0.01" value={productForm.price} placeholder="0.00"
+                  <Input data-testid="product-price-input" type="number" step="0.01" value={productForm.price} placeholder="0.00" maxLength={20}
                     onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} />
                 </div>
                 <div className="space-y-2">
@@ -447,7 +446,7 @@ export default function CreateBagListPage() {
               </div>
               <div className="space-y-2">
                 <Label>Enlace del Producto</Label>
-                <Input data-testid="product-link-input" value={productForm.link} placeholder="https://..."
+                <Input data-testid="product-link-input" value={productForm.link} placeholder="https://..." maxLength={2048}
                   onChange={(e) => setProductForm({ ...productForm, link: e.target.value })} />
               </div>
               <div className="space-y-2">
@@ -458,7 +457,7 @@ export default function CreateBagListPage() {
               </div>
               <div className="space-y-2">
                 <Label>Código de descuento</Label>
-                <Input data-testid="product-discount-input" value={productForm.discount_code} placeholder="Ej: VERANO20"
+                <Input data-testid="product-discount-input" value={productForm.discount_code} placeholder="Ej: VERANO20" maxLength={20}
                   onChange={(e) => setProductForm({ ...productForm, discount_code: e.target.value.toUpperCase() })} />
               </div>
               <div className="space-y-2">
@@ -481,7 +480,7 @@ export default function CreateBagListPage() {
                       <option value="pinterest">Pinterest</option>
                       <option value="twitch">Twitch</option>
                     </select>
-                    <Input placeholder="https://..." value={link.url}
+                    <Input placeholder="https://..." maxLength={2048} value={link.url}
                       onChange={(e) => {
                         const updated = [...productForm.social_links];
                         updated[idx].url = e.target.value;
@@ -503,13 +502,13 @@ export default function CreateBagListPage() {
                 <Label>Campos personalizados</Label>
                 {Array.isArray(productForm.custom_fields) ? productForm.custom_fields.map((field, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
-                    <Input placeholder="Nombre (ej: Peso)" value={field.key}
+                    <Input placeholder="Nombre (ej: Peso)" maxLength={20} value={field.key}
                       onChange={(e) => {
                         const updated = [...productForm.custom_fields];
                         updated[idx].key = e.target.value;
                         setProductForm({ ...productForm, custom_fields: updated });
                       }} />
-                    <Input placeholder="Valor (ej: 1.2kg)" value={field.value}
+                    <Input placeholder="Valor (ej: 1.2kg)" maxLength={20} value={field.value}
                       onChange={(e) => {
                         const updated = [...productForm.custom_fields];
                         updated[idx].value = e.target.value;
@@ -527,8 +526,8 @@ export default function CreateBagListPage() {
                   </div>
                 )) : Object.entries(productForm.custom_fields || {}).map(([key, value], idx) => (
                   <div key={idx} className="flex gap-2 items-center">
-                    <Input placeholder="Nombre" value={key} disabled />
-                    <Input placeholder="Valor" value={value} disabled />
+                    <Input placeholder="Nombre" maxLength={20} value={key} disabled />
+                    <Input placeholder="Valor" maxLength={20} value={value} disabled />
                     <Button variant="ghost" size="icon" onClick={() => {
                       const updated = { ...productForm.custom_fields };
                       delete updated[key];
