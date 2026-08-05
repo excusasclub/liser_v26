@@ -214,11 +214,10 @@ export default function LandingPage() {
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8">
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> 3 BagLists</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> 7 productos por BagList</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> URLs permanentes SEO</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Enlaces de afiliado</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Códigos de descuento</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Campos personalizados</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Analytics de 1 BagList</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Estadísticas básicas de clics</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Duplicar productos</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Captura de emails de seguidores</li>
                 </ul>
@@ -241,7 +240,6 @@ export default function LandingPage() {
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> 10 BagLists</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> 12 productos por BagList</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Detector de enlaces rotos</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> URLs permanentes SEO</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Enlaces de afiliado</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Códigos de descuento</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Campos personalizados</li>
@@ -267,7 +265,6 @@ export default function LandingPage() {
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> 25 BagLists</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> 20 productos por BagList</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Detector de enlaces rotos</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> URLs permanentes SEO</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Enlaces de afiliado</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Códigos de descuento</li>
                   <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Campos personalizados</li>
@@ -331,7 +328,7 @@ export default function LandingPage() {
             ¿Listo para organizar tus recomendados?
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-10">
-            Únete a los creadores que ya optimizan sus enlaces de afiliado y mejoran su estética con Liser.
+            Empieza gratis en 2 minutos y organiza todos tus recomendados en un solo lugar.
           </p>
           <Link to="/auth">
             <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-10 h-14 gap-2 font-bold shadow-xl shadow-primary/25">
@@ -346,8 +343,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <span>Liser 2026. Todos los derechos reservados.</span>
           <div className="flex items-center gap-6">
-            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacidad</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">Términos</Link>
+            <Link to="/legal/privacy" className="hover:text-foreground transition-colors">Privacidad</Link>
+            <Link to="/legal/terms" className="hover:text-foreground transition-colors">Términos</Link>
           </div>
         </div>
       </footer>
