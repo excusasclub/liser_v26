@@ -35,7 +35,7 @@ async def cleanup_unused_images():
             public_id = asset.get("public_id", "")
             
             # No borrar imágenes de la carpeta /liser/landing/
-            if public_id.startswith("liser/landing/"):
+            if public_id.startswith("liser/landing/") or public_id.startswith("liser/categories/"):
                 continue
             
             if asset_url and asset_url not in used_urls:
