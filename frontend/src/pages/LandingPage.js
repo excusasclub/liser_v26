@@ -343,8 +343,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <span>Liser 2026. Todos los derechos reservados.</span>
           <div className="flex items-center gap-6">
-            <Link to="/legal/privacy" className="hover:text-foreground transition-colors">Privacidad</Link>
-            <Link to="/legal/terms" className="hover:text-foreground transition-colors">Términos</Link>
+            <Link to="/legal/privacidad" className="hover:text-foreground transition-colors">Privacidad</Link>
+            <Link to="/legal/terminos" className="hover:text-foreground transition-colors">Términos</Link>
           </div>
         </div>
       </footer>
