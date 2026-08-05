@@ -48,8 +48,9 @@ async def register(request: Request, data: UserRegister):
     token = create_token(user_id)
     try:
         await send_verification_email(data.email, data.username, verification_token)
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error enviando verification email a {data.email}: {e}")
     return {
         "token": token,
         "user": {

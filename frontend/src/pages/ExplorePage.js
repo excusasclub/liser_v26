@@ -164,7 +164,7 @@ export default function ExplorePage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {featured.map(baglist => (
-              <BagListCard key={baglist.id} baglist={baglist} />
+              <BagListCard key={baglist.id} baglist={baglist} onUpdate={(updated) => setFeatured(prev => prev.map(b => b.id === updated.id ? updated : b))} />
             ))}
           </div>
         )}
