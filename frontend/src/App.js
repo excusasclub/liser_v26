@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import GoogleCallbackPage from '@/pages/GoogleCallbackPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import ChooseUsernamePage from '@/pages/ChooseUsernamePage';
+import ScrollToTop from '@/components/ScrollToTop';
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
@@ -75,6 +76,7 @@ function AppContent() {
           </button>
         </div>
       )}
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
